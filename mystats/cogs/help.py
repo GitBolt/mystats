@@ -1,6 +1,8 @@
 import disnake
 from disnake.ext import commands
-from models.dropdown import DropdownView
+from disnake import Embed
+from constants import Colours
+
 
 class Help(commands.Cog):
     def __init__(self, bot: commands.Bot,):
@@ -8,8 +10,20 @@ class Help(commands.Cog):
 
     @commands.command()
     async def avatar(self, ctx: commands.Context):
-        view = DropdownView()
-        await ctx.send("Sussy", view=view)
+        embed: Embed = Embed(
+            title="Help is here!",
+            color=Colours.DEFAULT.value
+        ).add_field(
+            name="!lobby `<#channel>` `<meta_data>`",
+            value=("Meta data contains the lobby's description where you can "
+                   "use --players and --timeout flags to change the default "
+                   " values. Default players are 4 and timeout is 30 minutes"
+                   )
+        ).add_field(
+            name="!close",
+            value="Use this command to close the lobby you started"
+        )
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Help(bot))

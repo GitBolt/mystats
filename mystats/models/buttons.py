@@ -47,6 +47,8 @@ class LobbyGate(disnake.ui.View):
                 ephemeral=True
             )
             self.lobby.add_player(interaction.author)
+            await self.lobby.join_alert(interaction.author)
+
             self.embed.clear_fields()
             self.embed.add_field(name="Players in lobby", value="\n".join(
                 [str(player) for player in self.lobby.players]))
@@ -84,8 +86,8 @@ class LobbyGate(disnake.ui.View):
     ):
         if interaction.author == self.ctx.author:
             await interaction.response.send_message(
-                ("You cannot leave the lobby since you started it "
-                 "Type !close if you want to close the lobby"),
+                ("You cannot leave the lobby since you started it. "
+                 "Type `!close` if you want to close this lobby."),
                 ephemeral=True
             )
 

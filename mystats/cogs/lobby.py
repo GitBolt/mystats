@@ -38,11 +38,10 @@ class GameLobby:
             return f"{round(time.total_seconds() / 60, 1)} minutes"
 
     async def join_alert(self, member: Member):
-        for player in self.players:
-            await player.send(
-                f"__New player has joined!__\n{member} just joined the lobby,"
-                f" {len(self.players)} players in the lobby now."
-            )
+        await self.channel.send(
+            f"__New player has joined!__\n{member} just joined the lobby,"
+            f" {len(self.players)} players in the lobby now."
+        )
 
     async def start(self):
         count = 5
@@ -83,16 +82,12 @@ class Lobby(commands.Cog):
         metadata: str = None,
     ):
 
-        if channel is None:
+        if channel is None or metadata is None:
             return await ctx.send(
-                "You need to define the channel, "
-                "either by entering it's name or mentioning it"
-            )
-        if metadata is None:
-            return await ctx.send(
-                "You need to define the description too! "
-                "Optionally change player amount and timeout "
-                "using `--players` and `--timeout` flags"
+                "You need to define the channel and metadata both.\n"
+                "Optionally change the player amount and timeout "
+                "using `--players` and `--timeout` flags. Example:"
+                "```!lobby #bot-commands Warzone duos --players 2 --timeout 1h```"
             )
 
         if self.check_playing(ctx.author):
