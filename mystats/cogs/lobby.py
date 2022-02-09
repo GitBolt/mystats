@@ -94,20 +94,8 @@ class GameLobby:
             name="Closed by",
             value=self.players[0]  # The starter is the first player
         )
-        view = Confirm()
-        if self.started:
-            message = await self.channel.send(
-                "The lobby has been started, are you sure you want to close it?",
-                view=view
-            )
-            await view.wait()
-            if view.value:
-                await self.message.edit(embed=embed, view=None)
-                await self.text_channel.delete()
-                await self.voice_channel.delete()
-                await message.delete()
-        else:
-            await self.message.edit(embed=embed, view=None)
+
+        await self.message.edit(embed=embed)
 
 
 class Lobby(commands.Cog):
@@ -240,8 +228,24 @@ class Lobby(commands.Cog):
     async def close(self, ctx: commands.Context):
         if self.check_playing(ctx.author):
             match = self.get_lobby(ctx.author)
-            await match.close()
-            self.lobbies.remove(match)
+            if match.started:
+                view = Confirm()
+                message = await match.channel.send(
+                    "The lobby has been started, are you sure you want to close it?",
+                    view=view
+                )
+                await view.wait()
+                await message.edit(view=None)
+                if view.value:
+                    await match.text_channel.delete()
+                    await match.voice_channel.delete()
+                    await match.close()
+                    self.lobbies.remove(match)
+            else:
+                await match.text_channel.delete()
+                await match.voice_channel.delete()
+                await match.close()
+                self.lobbies.remove(match)
         else:
             await ctx.send("You have not started any lobby.")
 
