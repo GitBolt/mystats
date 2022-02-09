@@ -5,11 +5,12 @@ from constants import Colours
 
 
 class LobbyGate(disnake.ui.View):
-    def __init__(self, ctx: Context, embed: Embed, lobby, timeout: int):
+    def __init__(self, ctx: Context, embed: Embed, lobby, lobbieslist, timeout: int):
         super().__init__(timeout=timeout)
         self.ctx: Context = ctx
         self.embed = embed
         self.lobby = lobby
+        self.lobbieslist = lobbieslist
 
     async def on_timeout(self):
         self.embed.title = "Lobby timeout"
@@ -25,8 +26,9 @@ class LobbyGate(disnake.ui.View):
             value=self.lobby.players_required,
             inline=False
         )
-        self.embed.color = Colours.INFO.value
+        self.embed.color = Colours.WARNING.value
         await self.message.edit(embed=self.embed, view=None)
+        self.lobbieslist.remove(self.lobby)
 
     @disnake.ui.button(label="Join", style=disnake.ButtonStyle.green)
     async def join(
@@ -62,7 +64,7 @@ class LobbyGate(disnake.ui.View):
                 await self.ctx.guild.create_voice_channel(
                     name="Lobby " + self.lobby.created_at.strftime("%H_%M"),
                     overwrites=overwrites)
-                    
+
             self.embed.title = "The lobby is filled!"
             self.embed.color = Colours.SUCCESS.value
             await self.message.edit(embed=self.embed, view=None)

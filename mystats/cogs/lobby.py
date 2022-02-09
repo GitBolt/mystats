@@ -82,6 +82,7 @@ class Lobby(commands.Cog):
         *,
         metadata: str = None,
     ):
+
         if channel is None:
             return await ctx.send(
                 "You need to define the channel, "
@@ -125,7 +126,7 @@ class Lobby(commands.Cog):
 
         if "--timeout" in metadata:
             timeout: str = metadata.split(
-                "--timeout ")[1].split("--players")[0]
+                "--timeout ")[1].split("--players")[0].replace(" ", "")
             description: str = metadata[:metadata.find("--timeout")]
 
         if "--players" in metadata:
@@ -167,7 +168,7 @@ class Lobby(commands.Cog):
         ).set_author(
             name=ctx.author, icon_url=ctx.author.avatar.url if ctx.author.avatar else "https://discord.com/assets/c09a43a372ba81e3018c3151d4ed4773.png"
         )
-        view = LobbyGate(ctx, embed, lobby, timeout)
+        view = LobbyGate(ctx, embed, lobby, self.lobbies, timeout)
         view.message = await channel.send(embed=embed, view=view)
 
     @commands.command()
