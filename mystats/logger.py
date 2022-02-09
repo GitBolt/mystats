@@ -20,7 +20,7 @@ class Logger:
     def success(self, message: str) -> None:
         self.__log('green', 'Success', message)
 
-    def inform(self, message: str) -> None:
+    def info(self, message: str) -> None:
         self.__log('blue', 'Info', message)
 
     def warn(self, message: str) -> None:

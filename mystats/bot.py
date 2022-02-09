@@ -2,8 +2,10 @@ import os
 import disnake
 from dotenv import load_dotenv
 from disnake.ext import commands
+from logger import log
 
 load_dotenv()
+
 intents = disnake.Intents().all()
 
 bot: commands.Bot = commands.Bot(
@@ -19,13 +21,14 @@ async def on_ready() -> None:
             type=disnake.ActivityType.streaming,
             name=f"Enter !help for help"
         ))
-    print(f"Logged in as {bot.user}")
+    log.info(f"Logged in as {bot.user}")
 
 
-print("Loading cogs...")
+log.info("Loading cogs...")
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
+log.success("Loaded cogs")
 
 
 bot.run(os.environ["TOKEN"])
