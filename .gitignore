@@ -1,0 +1,12 @@
+# Python Enviroments
+__pycache__
+env
+venv
+
+# ide Configurations
+.vscode
+.idea
+.vim
+
+# Bot configurations
+.env
