@@ -5,17 +5,20 @@ from utils import time_converter
 from constants import Colours
 
 
-class Lobby:
+class GameLobby:
     """Class representing a game lobby"""
+
     def __init__(
         self,
         bot: commands.Bot,
         lobby_starter: Member,
         players_required: int,
+        description: str
     ):
         self.bot: commands.Bot = bot
         self.players: list[Member] = [lobby_starter]
         self.players_required: int = players_required
+        self.description: int = description
         self.created_at: datetime = datetime.utcnow()
 
     def add_player(self, player: Member) -> None:
@@ -58,7 +61,7 @@ class Lobby:
 class Lobby(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.lobbies: list[Lobby] = []
+        self.lobbies: list[GameLobby] = []
 
     def check_playing(self, player: Member):
         return any(player in lobby.players for lobby in self.lobbies)
@@ -79,27 +82,27 @@ class Lobby(commands.Cog):
     ):
         if channel is None:
             return await ctx.send(
-                "You need to define the channel,"
+                "You need to define the channel, "
                 "either by mentioning it or using it's ID."
             )
 
         if self.check_playing(ctx.author):
-            match = self.get_match(ctx.author)
+            match = self.get_lobby(ctx.author)
 
             embed = Embed(
                 title="Lobby info",
                 description=(
-                    "The lobby currently has"
+                    "The lobby currently has "
                     f"**{len(match.players)}** players"
                 ),
-                color=Colours.WARNING
+                color=Colours.WARNING.value
             ).add_field(
                 name="Started",
                 value=match.time_elapsed()+" ago",
                 inline=False
             ).add_field(
                 name="Players required",
-                value=match.required_amount,
+                value=match.players_required,
                 inline=False
             )
 
@@ -108,15 +111,20 @@ class Lobby(commands.Cog):
                 embed=embed
             )
 
-        lobby = Lobby(self.bot, ctx.author, player_amount)
+        lobby = GameLobby(
+            self.bot,
+            ctx.author,
+            player_amount,
+            description
+        )
         self.lobbies.append(lobby)
 
         await channel.send(embed=Embed(
             title="A new lobby has been started!",
-            color=Colours.SUCCESS
+            color=Colours.SUCCESS.value
         ).add_field(
             name="Players required",
-            value=lobby.required_amount,
+            value=lobby.players_required,
             inline=False
         ).set_footer(
             text="Waiting for players to join..."
