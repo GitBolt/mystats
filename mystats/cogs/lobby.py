@@ -3,6 +3,7 @@ from disnake import TextChannel, Member, Embed
 from disnake.ext import commands
 from utils import time_converter
 from constants import Colours
+from models.buttons import LobbyGate
 
 
 class GameLobby:
@@ -76,14 +77,19 @@ class Lobby(commands.Cog):
         self,
         ctx: commands.Context,
         channel: TextChannel = None,
-        player_amount: int = 4,
-        description: str = None,
-        timeout: str = "30m"
+        *,
+        metadata: str = None,
     ):
         if channel is None:
             return await ctx.send(
                 "You need to define the channel, "
                 "either by mentioning it or using it's ID."
+            )
+        if metadata is None:
+            return await ctx.send(
+                "You need to define the description too! "
+                "Optionally change player amount and timeout "
+                "using `--players` and `--timeout` flags"
             )
 
         if self.check_playing(ctx.author):
@@ -111,6 +117,20 @@ class Lobby(commands.Cog):
                 embed=embed
             )
 
+        timeout: str = "30m"
+        player_amount: int = 4
+        description: str = None
+
+        if "--timeout" in metadata:
+            timeout: str = metadata.split("--timeout ")[1]
+            description: str = metadata[:metadata.find("--timeout")]
+
+        if "--players" in metadata:
+            players: str = metadata.split("--players ")[1]
+            description: str = description[:metadata.find("--timeout")]
+            if not players.isdigit():
+                return await ctx.send("Players must be an integer")
+
         lobby = GameLobby(
             self.bot,
             ctx.author,
@@ -119,7 +139,7 @@ class Lobby(commands.Cog):
         )
         self.lobbies.append(lobby)
 
-        await channel.send(embed=Embed(
+        embed = Embed(
             title="A new lobby has been started!",
             color=Colours.SUCCESS.value
         ).add_field(
@@ -129,11 +149,11 @@ class Lobby(commands.Cog):
         ).set_footer(
             text="Waiting for players to join..."
         ).set_author(
-            name=ctx.author, icon_url=ctx.author.avatar.url)
+            name=ctx.author, icon_url=ctx.author.avatar.url
         )
 
-        if player_amount == 1:
-            await lobby.start()
+        view = LobbyGate(ctx, time_converter(timeout))
+        view.message = await channel.send(embed=embed, view=view)
 
 
 def setup(bot):
