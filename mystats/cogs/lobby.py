@@ -242,8 +242,6 @@ class Lobby(commands.Cog):
                     await match.close()
                     self.lobbies.remove(match)
             else:
-                await match.text_channel.delete()
-                await match.voice_channel.delete()
                 await match.close()
                 self.lobbies.remove(match)
         else:
