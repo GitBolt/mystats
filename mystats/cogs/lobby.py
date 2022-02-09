@@ -16,7 +16,8 @@ class GameLobby:
         lobby_starter: Member,
         players_required: int,
         description: str,
-        channel: TextChannel
+        channel: TextChannel,
+        lobby_id: int
     ):
         self.bot: commands.Bot = bot
         self.players: list[Member] = [lobby_starter]
@@ -27,6 +28,7 @@ class GameLobby:
         self.started: bool = False
         self.text_channel: TextChannel = None
         self.voice_channel: VoiceChannel = None
+        self.lobby_id: int = lobby_id
 
     def add_player(self, player: Member) -> None:
         self.players.append(player)
@@ -53,19 +55,19 @@ class GameLobby:
         }
 
         text_channel = await self.channel.guild.create_text_channel(
-            name="Lobby " + self.created_at.strftime("%H_%M"),
+            name="Lobby " + self.lobby_id,
             overwrites=overwrites)
         self.text_channel = text_channel
 
         voice_channel = await self.channel.guild.create_voice_channel(
-            name="Lobby " + self.created_at.strftime("%H_%M"),
+            name="Lobby " + self.lobby_id,
             overwrites=overwrites)
         self.voice_channel = voice_channel
 
         embed: Embed = Embed(
             title="The lobby is filled!",
-            description= self.description,
-            color = Colours.SUCCESS.value
+            description=self.description,
+            color=Colours.SUCCESS.value
         )
         await self.message.edit(embed=embed, view=None)
 
@@ -84,7 +86,7 @@ class GameLobby:
             color=Colours.INFO.value
         ).add_field(
             name="Closed by",
-            value=self.players[0] # The starter is the first player
+            value=self.players[0]  # The starter is the first player
         )
         view = Confirm()
         if self.started:
@@ -181,14 +183,16 @@ class Lobby(commands.Cog):
             ctx.author,
             players_required,
             description,
-            channel
+            channel,
+            len(self.lobbies) + 1
         )
         self.lobbies.append(lobby)
 
         embed = Embed(
             title=(
                 "A new lobby has been started! "
-                f"{lobby.players_required} players required."
+                f"{lobby.players_required} players required.\n"
+                f"Lobby ID is **{lobby.lobby_id}**"
             ),
             description=description,
             color=Colours.SUCCESS.value
