@@ -49,7 +49,7 @@ class GameLobby:
             f" {len(self.players)} players in the lobby now."
         )
 
-    async def left_alert(self, member: Member):
+    async def leave_alert(self, member: Member):
         await self.channel.send(
             f"__A player has left the lobby__\n{member} just left the lobby,"
             f" {len(self.players)} players in the lobby now."
@@ -89,13 +89,13 @@ class GameLobby:
         embed: Embed = Embed(
             title="Lobby has been closed",
             description=self.description,
-            color=Colours.INFO.value
+            color=Colours.WARNING.value
         ).add_field(
             name="Closed by",
             value=self.players[0]  # The starter is the first player
         )
 
-        await self.message.edit(embed=embed)
+        await self.message.edit(embed=embed, view=None)
 
 
 class Lobby(commands.Cog):

@@ -85,4 +85,4 @@ class LobbyGate(disnake.ui.View):
             self.embed.add_field(name="Players in lobby", value="\n".join(
                 [str(player) for player in self.lobby.players]))
             await self.message.edit(embed=self.embed)
-            await self.lobby.join_alert(interaction.author)
+            await self.lobby.leave_alert(interaction.author)
