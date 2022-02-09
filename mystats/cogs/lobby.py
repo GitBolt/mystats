@@ -14,12 +14,14 @@ class GameLobby:
         bot: commands.Bot,
         lobby_starter: Member,
         players_required: int,
-        description: str
+        description: str,
+        channel: TextChannel
     ):
         self.bot: commands.Bot = bot
         self.players: list[Member] = [lobby_starter]
         self.players_required: int = players_required
         self.description: int = description
+        self.channel: TextChannel = channel
         self.created_at: datetime = datetime.utcnow()
 
     def add_player(self, player: Member) -> None:
@@ -72,7 +74,7 @@ class Lobby(commands.Cog):
             if player in lobby.players:
                 return lobby
 
-    @commands.command(name="lobby")
+    @commands.command()
     async def lobby(
         self,
         ctx: commands.Context,
@@ -119,7 +121,7 @@ class Lobby(commands.Cog):
 
         timeout: str = "30m"
         player_amount: int = 4
-        description: str = None
+        description: str = metadata
 
         if "--timeout" in metadata:
             timeout: str = metadata.split("--timeout ")[1]
@@ -131,20 +133,30 @@ class Lobby(commands.Cog):
             if not players.isdigit():
                 return await ctx.send("Players must be an integer")
 
+        try:
+            timeout: int = time_converter(timeout)
+        except ValueError as e:
+            return await ctx.send(e)
+
         lobby = GameLobby(
             self.bot,
             ctx.author,
             player_amount,
-            description
+            description,
+            channel
         )
         self.lobbies.append(lobby)
 
         embed = Embed(
-            title="A new lobby has been started!",
+            title=(
+                "A new lobby has been started! "
+                f"{lobby.players_required} players required."
+            ),
+            description=description,
             color=Colours.SUCCESS.value
         ).add_field(
-            name="Players required",
-            value=lobby.players_required,
+            name="Players in lobby",
+            value=ctx.author,
             inline=False
         ).set_footer(
             text="Waiting for players to join..."
@@ -152,8 +164,25 @@ class Lobby(commands.Cog):
             name=ctx.author, icon_url=ctx.author.avatar.url
         )
 
-        view = LobbyGate(ctx, time_converter(timeout))
+        view = LobbyGate(ctx, embed, timeout)
         view.message = await channel.send(embed=embed, view=view)
+
+    @commands.command()
+    async def close(self, ctx: commands.Context):
+        if self.check_playing(ctx.author):
+            match = self.get_lobby(ctx.author)
+            self.lobbies.remove(match)
+            embed: Embed = Embed(
+                title="Lobby has been closed",
+                description=match.description,
+                color=Colours.INFO.value
+            ).add_field(
+                name="Closed by",
+                value=ctx.author
+            )
+            await match.channel.send(embed=embed)
+        else:
+            await ctx.send("You have not started any lobby.")
 
 
 def setup(bot):
