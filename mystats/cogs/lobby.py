@@ -1,9 +1,10 @@
 from datetime import datetime
-from disnake import TextChannel, Member, Embed
 from disnake.ext import commands
 from utils import time_converter
 from constants import Colours
-from models.buttons import LobbyGate
+from models.buttons.lobbygate import LobbyGate
+from models.buttons.confirm import Confirm
+from disnake import TextChannel, Member, Embed, PermissionOverwrite, VoiceChannel
 
 
 class GameLobby:
@@ -23,6 +24,9 @@ class GameLobby:
         self.description: int = description
         self.channel: TextChannel = channel
         self.created_at: datetime = datetime.utcnow()
+        self.started: bool = False
+        self.text_channel: TextChannel = None
+        self.voice_channel: VoiceChannel = None
 
     def add_player(self, player: Member) -> None:
         self.players.append(player)
@@ -43,21 +47,55 @@ class GameLobby:
             f" {len(self.players)} players in the lobby now."
         )
 
-    async def start(self):
-        count = 5
-        embed = Embed(
-            title="All players joined!",
-            description=f"Match starting in {count}...",
-            color=Colours.DEFAULT,
-        ).add_field(
-            name="Started", value=f"{self.time_elapsed()} ago", inline=False
-        ).add_field(
-            name="Players", value="\n".join(
-                [str(player) for player in self.players]
-            ), inline=False
+    async def start(self) -> None:
+        overwrites = {
+            self.channel.guild.default_role: PermissionOverwrite(view_channel=False),
+        }
+
+        text_channel = await self.channel.guild.create_text_channel(
+            name="Lobby " + self.created_at.strftime("%H_%M"),
+            overwrites=overwrites)
+        self.text_channel = text_channel
+
+        voice_channel = await self.channel.guild.create_voice_channel(
+            name="Lobby " + self.created_at.strftime("%H_%M"),
+            overwrites=overwrites)
+        self.voice_channel = voice_channel
+
+        embed: Embed = Embed(
+            title="The lobby is filled!",
+            description= self.description,
+            color = Colours.SUCCESS.value
         )
-        for player in self.players:
-            await player.send(embed=embed)
+        await self.message.edit(embed=embed, view=None)
+
+        await self.channel.send(
+            "The lobby is filled! Head over to "
+            f"{text_channel} text and voice channels. "
+            " ".join([player.mention for player in self.players]
+                     )
+        )
+        self.started = True
+
+    async def close(self) -> None:
+        embed: Embed = Embed(
+            title="Lobby has been closed",
+            description=self.description,
+            color=Colours.INFO.value
+        ).add_field(
+            name="Closed by",
+            value=self.players[0] # The starter is the first player
+        )
+        view = Confirm()
+        if self.started:
+            await self.channel.send("The lobby has been started, are you sure you want to close it?", view=view)
+            await view.wait()
+            if view.value:
+                await self.channel.send(embed=embed)
+                await self.text_channel.delete()
+                await self.voice_channel.delete()
+            else:
+                await self.channel.send("Cancelled lobby closing process.")
 
 
 class Lobby(commands.Cog):
@@ -164,22 +202,18 @@ class Lobby(commands.Cog):
             name=ctx.author, icon_url=ctx.author.avatar.url if ctx.author.avatar else "https://discord.com/assets/c09a43a372ba81e3018c3151d4ed4773.png"
         )
         view = LobbyGate(ctx, embed, lobby, self.lobbies, timeout)
-        view.message = await channel.send(embed=embed, view=view)
+
+        message = await channel.send(embed=embed, view=view)
+        view.message = message
+        lobby.message = message
 
     @commands.command()
     async def close(self, ctx: commands.Context):
         if self.check_playing(ctx.author):
             match = self.get_lobby(ctx.author)
+            await match.close()
             self.lobbies.remove(match)
-            embed: Embed = Embed(
-                title="Lobby has been closed",
-                description=match.description,
-                color=Colours.INFO.value
-            ).add_field(
-                name="Closed by",
-                value=ctx.author
-            )
-            await match.channel.send(embed=embed)
+
         else:
             await ctx.send("You have not started any lobby.")
 

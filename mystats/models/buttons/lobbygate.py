@@ -55,28 +55,7 @@ class LobbyGate(disnake.ui.View):
             await self.message.edit(embed=self.embed)
 
             if len(self.lobby.players) == self.lobby.players_required:
-                overwrites = {
-                    self.ctx.guild.default_role: disnake.PermissionOverwrite(view_channel=False),
-                }
-
-                ch_name = await self.ctx.guild.create_text_channel(
-                    name="Lobby " + self.lobby.created_at.strftime("%H_%M"),
-                    overwrites=overwrites)
-
-                await self.ctx.guild.create_voice_channel(
-                    name="Lobby " + self.lobby.created_at.strftime("%H_%M"),
-                    overwrites=overwrites)
-
-            self.embed.title = "The lobby is filled!"
-            self.embed.color = Colours.SUCCESS.value
-            await self.message.edit(embed=self.embed, view=None)
-
-            await self.lobby.channel.send(
-                            "The lobby is filled! Head over to " 
-                            f"{ch_name} text and voice channels. "
-                            " ".join([player.mention for player in self.lobby.players]
-                             )
-            )
+                await self.lobby.start()
 
     @disnake.ui.button(label="Leave", style=disnake.ButtonStyle.red)
     async def leave(
