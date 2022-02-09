@@ -85,7 +85,7 @@ class Lobby(commands.Cog):
         if channel is None:
             return await ctx.send(
                 "You need to define the channel, "
-                "either by mentioning it or using it's ID."
+                "either by entering it's name or mentioning it"
             )
         if metadata is None:
             return await ctx.send(
@@ -120,19 +120,23 @@ class Lobby(commands.Cog):
             )
 
         timeout: str = "30m"
-        player_amount: int = 4
+        players_required: int = 4
         description: str = metadata
 
         if "--timeout" in metadata:
-            timeout: str = metadata.split("--timeout ")[1]
+            timeout: str = metadata.split(
+                "--timeout ")[1].split("--players")[0]
             description: str = metadata[:metadata.find("--timeout")]
 
         if "--players" in metadata:
-            players: str = metadata.split("--players ")[1]
-            description: str = description[:metadata.find("--timeout")]
-            if not players.isdigit():
+            players_required: str = metadata.split(
+                "--players ")[1].split("--timeout")[0].replace(" ", "")
+            description: str = description[:metadata.find("--players")]
+            if not players_required.isdigit():
                 return await ctx.send("Players must be an integer")
-
+            if int(players_required) < 2:
+                return await ctx.send("A lobby requires two or more players")
+            players_required: int = int(players_required)
         try:
             timeout: int = time_converter(timeout)
         except ValueError as e:
@@ -141,7 +145,7 @@ class Lobby(commands.Cog):
         lobby = GameLobby(
             self.bot,
             ctx.author,
-            player_amount,
+            players_required,
             description,
             channel
         )
@@ -161,10 +165,9 @@ class Lobby(commands.Cog):
         ).set_footer(
             text="Waiting for players to join..."
         ).set_author(
-            name=ctx.author, icon_url=ctx.author.avatar.url
+            name=ctx.author, icon_url=ctx.author.avatar.url if ctx.author.avatar else "https://discord.com/assets/c09a43a372ba81e3018c3151d4ed4773.png"
         )
-
-        view = LobbyGate(ctx, embed, timeout)
+        view = LobbyGate(ctx, embed, lobby, timeout)
         view.message = await channel.send(embed=embed, view=view)
 
     @commands.command()
