@@ -9,19 +9,21 @@ class Help(commands.Cog):
         self.bot: commands.Bot = bot
 
     @commands.command()
-    async def avatar(self, ctx: commands.Context):
+    async def help(self, ctx: commands.Context):
         embed: Embed = Embed(
             title="Help is here!",
             color=Colours.DEFAULT.value
         ).add_field(
             name="!lobby `<#channel>` `<meta_data>`",
             value=("Meta data contains the lobby's description where you can "
-                   "use --players and --timeout flags to change the default "
-                   " values. Default players are 4 and timeout is 30 minutes"
-                   )
+                   "use `--players` and `--timeout` flags to change the default "
+                   " values.\nDefault players are 4 and timeout is 30 minutes"
+                   ),
+            inline=False
         ).add_field(
             name="!close",
-            value="Use this command to close the lobby you started"
+            value="Use this command to close the lobby you started",
+            inline=False
         )
         await ctx.send(embed=embed)
 
