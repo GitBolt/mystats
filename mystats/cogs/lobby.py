@@ -129,22 +129,22 @@ class Lobby(commands.Cog):
             )
 
         if self.check_playing(ctx.author):
-            match = self.get_lobby(ctx.author)
+            lobby = self.get_lobby(ctx.author)
 
             embed = Embed(
                 title="Lobby info",
                 description=(
                     "The lobby currently has "
-                    f"**{len(match.players)}** players"
+                    f"**{len(lobby.players)}** players"
                 ),
                 color=Colours.WARNING.value
             ).add_field(
                 name="Started",
-                value=match.time_elapsed()+" ago",
+                value=lobby.time_elapsed()+" ago",
                 inline=False
             ).add_field(
                 name="Players required",
-                value=match.players_required,
+                value=lobby.players_required,
                 inline=False
             )
 
@@ -227,23 +227,23 @@ class Lobby(commands.Cog):
     @commands.command()
     async def close(self, ctx: commands.Context):
         if self.check_playing(ctx.author):
-            match = self.get_lobby(ctx.author)
-            if match.started:
+            lobby = self.get_lobby(ctx.author)
+            if lobby.started:
                 view = Confirm()
-                message = await match.channel.send(
+                message = await lobby.channel.send(
                     "The lobby has been started, are you sure you want to close it?",
                     view=view
                 )
                 await view.wait()
                 await message.edit(view=None)
                 if view.value:
-                    await match.text_channel.delete()
-                    await match.voice_channel.delete()
-                    await match.close()
-                    self.lobbies.remove(match)
+                    await lobby.text_channel.delete()
+                    await lobby.voice_channel.delete()
+                    await lobby.close()
+                    self.lobbies.remove(lobby)
             else:
-                await match.close()
-                self.lobbies.remove(match)
+                await lobby.close()
+                self.lobbies.remove(lobby)
         else:
             await ctx.send("You have not started any lobby.")
 
