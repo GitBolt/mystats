@@ -1,12 +1,12 @@
 import os
-import disnake
+from logger import log
 from dotenv import load_dotenv
 from disnake.ext import commands
-from logger import log
+from disnake import Intents, Activity, ActivityType
 
 load_dotenv()
 
-intents = disnake.Intents().all()
+intents: Intents = Intents().all()
 
 bot: commands.Bot = commands.Bot(
     command_prefix="!",
@@ -16,12 +16,13 @@ bot: commands.Bot = commands.Bot(
 
 @bot.event
 async def on_ready() -> None:
+    log.info(f"Changing presence...")
     await bot.change_presence(
-        activity=disnake.Activity(
-            type=disnake.ActivityType.streaming,
+        activity=Activity(
+            type=ActivityType.streaming,
             name=f"Enter !help for help"
         ))
-    log.info(f"Logged in as {bot.user}")
+    log.success(f"Logged in as {bot.user}")
 
 
 log.info("Loading cogs...")

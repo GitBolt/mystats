@@ -4,7 +4,16 @@ from utils import time_converter
 from constants import Colours
 from models.buttons.lobbygate import LobbyGate
 from models.buttons.confirm import Confirm
-from disnake import TextChannel, Member, Embed, PermissionOverwrite, VoiceChannel
+from disnake import (
+    TextChannel,
+    Member,
+    Embed,
+    PermissionOverwrite,
+    VoiceChannel,
+    Role,
+    Guild,
+    Message
+)
 
 
 class GameLobby:
@@ -24,11 +33,12 @@ class GameLobby:
         self.players_required: int = players_required
         self.description: int = description
         self.channel: TextChannel = channel
+        self.lobby_id: int = lobby_id
+
         self.created_at: datetime = datetime.utcnow()
         self.started: bool = False
         self.text_channel: TextChannel = None
         self.voice_channel: VoiceChannel = None
-        self.lobby_id: int = lobby_id
 
     def add_player(self, player: Member) -> None:
         self.players.append(player)
@@ -37,37 +47,40 @@ class GameLobby:
         self.players.remove(player)
 
     def time_elapsed(self):
-        time = datetime.utcnow() - self.created_at
+        time: datetime = datetime.utcnow() - self.created_at
         if time.total_seconds() < 60:
             return f"{round(time.total_seconds(), 1)} seconds"
         else:
             return f"{round(time.total_seconds() / 60, 1)} minutes"
 
-    async def join_alert(self, member: Member):
+    async def join_alert(self, member: Member) -> None:
         await self.channel.send(
             f"__New player has joined!__\n{member} just joined the lobby,"
             f" {len(self.players)} players in the lobby now."
         )
 
-    async def leave_alert(self, member: Member):
+    async def leave_alert(self, member: Member) -> None:
         await self.channel.send(
             f"__A player has left the lobby__\n{member} just left the lobby,"
             f" {len(self.players)} players in the lobby now."
         )
 
     async def start(self) -> None:
-        overwrites = {
-            self.channel.guild.default_role: PermissionOverwrite(view_channel=False),
+        guild: Guild = self.channel.guild
+        overwrites: dict[Role, PermissionOverwrite] = {
+            guild.default_role: PermissionOverwrite(view_channel=False),
         }
 
-        text_channel = await self.channel.guild.create_text_channel(
+        text_channel: TextChannel = await guild.create_text_channel(
             name="lobby_" + str(self.lobby_id),
-            overwrites=overwrites)
+            overwrites=overwrites
+        )
         self.text_channel = text_channel
 
-        voice_channel = await self.channel.guild.create_voice_channel(
+        voice_channel: TextChannel = await guild.create_voice_channel(
             name="lobby_" + str(self.lobby_id),
-            overwrites=overwrites)
+            overwrites=overwrites
+        )
         self.voice_channel = voice_channel
 
         embed: Embed = Embed(
@@ -78,7 +91,6 @@ class GameLobby:
         await self.message.edit(embed=embed, view=None)
 
         mentions = " ".join([player.mention for player in self.players])
-
         await self.channel.send(
             "The lobby is filled! Head over to "
             f"`{text_channel}` text and voice channels. {mentions}"
@@ -100,13 +112,13 @@ class GameLobby:
 
 class Lobby(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: commands.Bot = bot
         self.lobbies: list[GameLobby] = []
 
-    def check_playing(self, player: Member):
+    def check_playing(self, player: Member) -> None:
         return any(player in lobby.players for lobby in self.lobbies)
 
-    def get_lobby(self, player: Member):
+    def get_lobby(self, player: Member) -> None:
         for lobby in self.lobbies:
             if player in lobby.players:
                 return lobby
@@ -118,7 +130,7 @@ class Lobby(commands.Cog):
         channel: TextChannel = None,
         *,
         metadata: str = None,
-    ):
+    ) -> None:
 
         if channel is None or metadata is None:
             return await ctx.send(
@@ -129,9 +141,9 @@ class Lobby(commands.Cog):
             )
 
         if self.check_playing(ctx.author):
-            lobby = self.get_lobby(ctx.author)
+            lobby: GameLobby = self.get_lobby(ctx.author)
 
-            embed = Embed(
+            embed: Embed = Embed(
                 title="Lobby info",
                 description=(
                     "The lobby currently has "
@@ -156,8 +168,12 @@ class Lobby(commands.Cog):
         timeout: str = "30m"
         players_required: int = 4
         description: str = metadata
-        conversions = {"s": "seconds",
-                       "m": "minutes", "h": "hours", "d": "days"}
+        conversions: dict[str, str] = {
+            "s": "seconds",
+            "m": "minutes",
+            "h": "hours",
+            "d": "days"
+        }
         readable_timeout: str = timeout[:-1] + " " + conversions[timeout[-1]]
 
         if "--timeout" in metadata:
@@ -184,7 +200,7 @@ class Lobby(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
 
-        lobby = GameLobby(
+        lobby: GameLobby = GameLobby(
             self.bot,
             ctx.author,
             players_required,
@@ -194,7 +210,7 @@ class Lobby(commands.Cog):
         )
         self.lobbies.append(lobby)
 
-        embed = Embed(
+        embed: Embed = Embed(
             title=(
                 "A new lobby has been started!\n"
                 f"{lobby.players_required} players required."
@@ -216,22 +232,26 @@ class Lobby(commands.Cog):
         ).set_footer(
             text="Waiting for players to join..."
         ).set_author(
-            name=ctx.author, icon_url=ctx.author.avatar.url if ctx.author.avatar else "https://discord.com/assets/c09a43a372ba81e3018c3151d4ed4773.png"
+            name=ctx.author,
+            icon_url=ctx.author.avatar.url if ctx.author.avatar else
+            "https://discord.com/assets/c09a43a372ba81e3018c3151d4ed4773.png"
         )
-        view = LobbyGate(ctx, embed, lobby, self.lobbies, timeout)
+        view: LobbyGate = LobbyGate(ctx, embed, lobby, self.lobbies, timeout)
 
-        message = await channel.send(embed=embed, view=view)
+        message: Message = await channel.send(embed=embed, view=view)
         view.message = message
         lobby.message = message
 
     @commands.command()
-    async def close(self, ctx: commands.Context):
+    async def close(self, ctx: commands.Context) -> None:
         if self.check_playing(ctx.author):
-            lobby = self.get_lobby(ctx.author)
+            lobby: GameLobby = self.get_lobby(ctx.author)
             if lobby.started:
-                view = Confirm()
-                message = await lobby.channel.send(
-                    "The lobby has been started, are you sure you want to close it?",
+                view: Confirm = Confirm()
+                message: Message = await lobby.channel.send((
+                    "The lobby has been started, "
+                    "are you sure you want to close it?"
+                ),
                     view=view
                 )
                 await view.wait()

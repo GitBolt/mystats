@@ -9,7 +9,7 @@ class Help(commands.Cog):
         self.bot: commands.Bot = bot
 
     @commands.command()
-    async def help(self, ctx: commands.Context):
+    async def help(self, ctx: commands.Context) -> None:
         embed: Embed = Embed(
             title="Help is here!",
             color=Colours.DEFAULT.value
@@ -26,6 +26,7 @@ class Help(commands.Cog):
             inline=False
         )
         await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Help(bot))
