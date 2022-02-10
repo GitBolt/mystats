@@ -11,10 +11,10 @@ class Help(commands.Cog):
     @commands.command()
     async def help(self, ctx: commands.Context) -> None:
         embed: Embed = Embed(
-            title="Help is here!",
+            title="Welcome to MYSTATS LOBBY CREATOR",
             color=Colours.DEFAULT.value
         ).add_field(
-            name="Welcome to MYSTATS LOBBY CREATOR.",
+            name="!lobby create",
             value=("\n> __How to create a LOBBY?__\n"
                    "> 1. Go to the channel where you want to start the lobby\n"
                    "> 2. Enter `!lobby create`\n"

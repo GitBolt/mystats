@@ -25,6 +25,7 @@ SUPPORTED_GAMES: tuple[str, str, str, str] = (
 )
 LOBBY_CATEGORY_ID = 941376025936429108
 
+
 class GameLobby:
     """Class representing a game lobby"""
 
@@ -74,7 +75,7 @@ class GameLobby:
             f" {len(self.players)} players in the lobby now."
         )
 
-    async def start(self) -> None:
+    async def create_channels(self) -> None:
         guild: Guild = self.channel.guild
         overwrites: dict[Role, PermissionOverwrite] = {
             guild.default_role: PermissionOverwrite(view_channel=False),
@@ -94,6 +95,7 @@ class GameLobby:
         )
         self.voice_channel = voice_channel
 
+    async def start(self) -> None:
         embed: Embed = Embed(
             title=f"The lobby is filled!\n{self.info}",
             description=self.description,
@@ -114,7 +116,7 @@ class GameLobby:
         mentions = " ".join([player.mention for player in self.players])
         await self.channel.send(
             "The lobby is filled! Head over to "
-            f"`{voice_channel}` text and voice channels. {mentions}"
+            f"`{self.voice_channel.name}` text and voice channels. {mentions}"
         )
         self.started = True
 
@@ -146,35 +148,37 @@ class Lobby(commands.Cog):
 
     @commands.group(pass_context=True, invoke_without_command=True)
     async def lobby(self, ctx):
-        await ctx.send("Perhaps, you meant `!lobby create`?")
+        await ctx.invoke(self.bot.get_command('help'))
 
     @lobby.command()
     async def create(
         self,
         ctx: commands.Context,
-        channel: TextChannel = None,
+        channel_arg: TextChannel = None,
         *,
         description: str = "Looking for players",
     ) -> None:
 
-        players_required: int = 4
-        info: str = None
-        if [i for i in SUPPORTED_GAMES if i in ctx.channel.category.name.lower()]:
-            print("Yes")
-            channel: TextChannel = ctx.channel
-
-            game: str = [i for i in SUPPORTED_GAMES if i in ctx.channel.category.name.lower()][0].capitalize()
-            mode: str = channel.name.lower()
-            info: str = f"{game} {mode}"
-
-            players_required: int = game_mode_to_players[mode]
-
-        if channel is None:
+        if channel_arg is None:
             return await ctx.send(
                 "Since you are not in a game channel, you would need to "
                 "define the channel in the command too, optionally add a "
                 "description. Example:```!lobby create #duos Looking for a quick match```"
             )
+        else:
+            channel = channel_arg
+
+        players_required: int = 4
+        info: str = None
+
+        if [i for i in SUPPORTED_GAMES if i in channel.category.name.lower()]:
+            game: str = [
+                i for i in SUPPORTED_GAMES if i in channel.category.name.lower()][0].capitalize()
+            mode: str = channel.name.lower()
+            info: str = f"{game} {mode}"
+
+            players_required: int = game_mode_to_players[mode]
+
 
         if self.check_playing(ctx.author):
             lobby: GameLobby = self.get_lobby(ctx.author)
@@ -214,11 +218,15 @@ class Lobby(commands.Cog):
             channel,
         )
         self.lobbies.append(lobby)
-
+        await lobby.create_channels()
         embed: Embed = Embed(
-            title=f"A new lobby has been started!\n{info}",
+            title=f"A NEW LOBBY HAS BEEN CREATED!",
             description=description,
-            color=Colours.SUCCESS.value
+            color=Colours.ERROR.value
+        ).add_field(
+            name="Type",
+            value=info,
+            inline=False
         ).add_field(
             name="Slots",
             value=f"{len(lobby.players)}/{players_required}",
@@ -259,13 +267,17 @@ class Lobby(commands.Cog):
                 await view.wait()
                 await message.edit(view=None)
                 if view.value:
-                    await lobby.text_channel.delete()
-                    await lobby.voice_channel.delete()
                     await lobby.close()
                     self.lobbies.remove(lobby)
+                    await lobby.text_channel.delete()
+                    await lobby.voice_channel.delete()
+                    await ctx.send("The lobby has been closed.")
             else:
                 await lobby.close()
                 self.lobbies.remove(lobby)
+                await lobby.text_channel.delete()
+                await lobby.voice_channel.delete()
+                await ctx.send("The lobby has been closed.")
         else:
             await ctx.send("You have not started any lobby.")
 
