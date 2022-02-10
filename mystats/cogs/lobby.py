@@ -34,12 +34,14 @@ class GameLobby:
         lobby_starter: Member,
         players_required: int,
         description: str,
+        info: str,
         channel: TextChannel,
     ):
         self.bot: commands.Bot = bot
         self.players: list[Member] = [lobby_starter]
         self.players_required: int = players_required
         self.description: int = description
+        self.info: str = info
         self.channel: TextChannel = channel
 
         self.created_at: datetime = datetime.utcnow()
@@ -91,7 +93,7 @@ class GameLobby:
         self.voice_channel = voice_channel
 
         embed: Embed = Embed(
-            title="The lobby is filled!",
+            title=f"The lobby is filled!\n{self.info}",
             description=self.description,
             color=Colours.SUCCESS.value
         )
@@ -136,7 +138,7 @@ class Lobby(commands.Cog):
         ctx: commands.Context,
         channel: TextChannel = None,
         *,
-        description: str = None,
+        description: str = "No description provided",
     ) -> None:
 
         players_required: int = 4
@@ -161,19 +163,16 @@ class Lobby(commands.Cog):
             lobby: GameLobby = self.get_lobby(ctx.author)
 
             embed: Embed = Embed(
-                title="Lobby info",
-                description=(
-                    "The lobby currently has "
-                    f"**{len(lobby.players)}** players"
-                ),
+                title=lobby.info,
+                description=lobby.description,
                 color=Colours.WARNING.value
             ).add_field(
                 name="Started",
                 value=lobby.time_elapsed()+" ago",
                 inline=False
             ).add_field(
-                name="Players required",
-                value=lobby.players_required,
+                name="Players in lobby",
+                value=" ".join([str(x) for x in lobby.players]),
                 inline=False
             )
 
@@ -194,15 +193,13 @@ class Lobby(commands.Cog):
             ctx.author,
             players_required,
             description,
+            info,
             channel,
         )
         self.lobbies.append(lobby)
 
         embed: Embed = Embed(
-            title=(
-                "A new lobby has been started!\n"
-                f"{lobby.players_required} players required."
-            ),
+            title=f"A new lobby has been started!\n{info}",
             description=description,
             color=Colours.SUCCESS.value
         ).add_field(
