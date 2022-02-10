@@ -21,9 +21,9 @@ SUPPORTED_GAMES: tuple[str, str, str, str] = (
     "warzone",
     "fortnite",
     "apex",
-    "alo"
+    "halo"
 )
-
+LOBBY_CATEGORY_ID = 941376025936429108
 
 class GameLobby:
     """Class representing a game lobby"""
@@ -83,14 +83,14 @@ class GameLobby:
         text_channel: TextChannel = await guild.create_text_channel(
             name=self.players[0].name + "'s Lobby",
             overwrites=overwrites,
-            category=guild.get_channel(852014378404282391)
+            category=guild.get_channel(LOBBY_CATEGORY_ID)
         )
         self.text_channel = text_channel
 
         voice_channel: TextChannel = await guild.create_voice_channel(
             name=self.players[0].name + "'s Lobby",
             overwrites=overwrites,
-            category=guild.get_channel(852014378404282391)
+            category=guild.get_channel(LOBBY_CATEGORY_ID)
         )
         self.voice_channel = voice_channel
 
@@ -159,10 +159,11 @@ class Lobby(commands.Cog):
 
         players_required: int = 4
         info: str = None
-        if any(e in ctx.channel.category.name for e in SUPPORTED_GAMES):
+        if [i for i in SUPPORTED_GAMES if i in ctx.channel.category.name.lower()]:
+            print("Yes")
             channel: TextChannel = ctx.channel
 
-            game: str = channel.category.name.capitalize()
+            game: str = [i for i in SUPPORTED_GAMES if i in ctx.channel.category.name.lower()][0].capitalize()
             mode: str = channel.name.lower()
             info: str = f"{game} {mode}"
 
