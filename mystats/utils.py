@@ -15,3 +15,9 @@ def time_converter(time: str) -> int:
         raise ValueError("The time provided is not an integer")
 
     return int(time[:-1]) * conversions[time[-1]]
+
+game_mode_to_players: dict[str, int] = {
+    "Duos": 2,
+    "Trios": 3,
+    "Quads": 4
+}

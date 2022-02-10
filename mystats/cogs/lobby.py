@@ -1,6 +1,7 @@
 from datetime import datetime
+from statistics import mode
 from disnake.ext import commands
-from utils import time_converter
+from utils import time_converter, game_mode_to_players
 from constants import Colours
 from models.buttons.lobbygate import LobbyGate
 from models.buttons.confirm import Confirm
@@ -13,6 +14,14 @@ from disnake import (
     Role,
     Guild,
     Message
+)
+
+
+SUPPORTED_GAMES: tuple[str, str, str, str] = (
+    "warzone",
+    "fortnite",
+    "apex",
+    "alo"
 )
 
 
@@ -70,13 +79,13 @@ class GameLobby:
         }
 
         text_channel: TextChannel = await guild.create_text_channel(
-            name=str(self.players[0]) + "_lobby",
+            name=self.players[0].name + "'s Lobby",
             overwrites=overwrites
         )
         self.text_channel = text_channel
 
         voice_channel: TextChannel = await guild.create_voice_channel(
-            name=str(self.players[0]) + "_lobby",
+            name=self.players[0].name + "'s Lobby",
             overwrites=overwrites
         )
         self.voice_channel = voice_channel
@@ -91,7 +100,7 @@ class GameLobby:
         mentions = " ".join([player.mention for player in self.players])
         await self.channel.send(
             "The lobby is filled! Head over to "
-            f"`{text_channel}` text and voice channels. {mentions}"
+            f"`{voice_channel}` text and voice channels. {mentions}"
         )
         self.started = True
 
@@ -129,6 +138,15 @@ class Lobby(commands.Cog):
         *,
         metadata: str = None,
     ) -> None:
+        players_required: int = 4
+
+        if any(e in ctx.channel.category.name for e in SUPPORTED_GAMES):
+            channel: TextChannel = ctx.channel
+            game: str = channel.category.name.capitalize()
+            mode: str = channel.name.capitalize()
+            metadata: str = f"{game} {mode}"
+
+            players_required: int = game_mode_to_players[mode]
 
         if channel is None or metadata is None:
             return await ctx.send(
@@ -164,9 +182,8 @@ class Lobby(commands.Cog):
             )
 
         timeout: str = "30m"
-        players_required: int = 4
         description: str = metadata
-        
+
         if "--players" in metadata:
             players_required: str = metadata.split(
                 "--players ")[1]
