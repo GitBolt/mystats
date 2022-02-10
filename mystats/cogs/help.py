@@ -15,14 +15,17 @@ class Help(commands.Cog):
             color=Colours.DEFAULT.value
         ).add_field(
             name="!lobby `<#channel>` `<meta_data>`",
-            value=("Meta data contains the lobby's description where you can "
-                   "use `--players` and `--timeout` flags to change the default "
-                   " values.\nDefault players are 4 and timeout is 30 minutes"
-                   ),
+            value=("Channel and meta data are optional when you use this "
+                    "command in game specific channels. When using this "
+                    "command from other channel you need to specify the "
+                    "game channel and meta data, which is the description of "
+                    "the lobby and can have --mode flag to change game mode "
+                    "(duos, trios, quads)\nExample: `!lobby #duos --"
+                    ),
             inline=False
         ).add_field(
             name="!close",
-            value="Use this command to close the lobby you started",
+            value="Use this command to close the lobby you started.",
             inline=False
         )
         await ctx.send(embed=embed)

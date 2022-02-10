@@ -136,24 +136,25 @@ class Lobby(commands.Cog):
         ctx: commands.Context,
         channel: TextChannel = None,
         *,
-        metadata: str = None,
+        description: str = None,
     ) -> None:
-        players_required: int = 4
 
+        players_required: int = 4
+        info: str = None
         if any(e in ctx.channel.category.name for e in SUPPORTED_GAMES):
             channel: TextChannel = ctx.channel
+
             game: str = channel.category.name.capitalize()
-            mode: str = channel.name.capitalize()
-            metadata: str = f"{game} {mode}"
+            mode: str = channel.name.lower()
+            info: str = f"{game} {mode}"
 
             players_required: int = game_mode_to_players[mode]
 
-        if channel is None or metadata is None:
+        if channel is None:
             return await ctx.send(
-                "You need to define the channel and metadata both.\n"
-                "Optionally change the player amount "
-                "using `--players` flags. Example:"
-                "```!lobby #bot-commands Warzone duos --players 2```"
+                "Since you are not in a game channel, you would need to "
+                "define the channel in the command too, optionally add a "
+                "description. Example:```!lobby #duos Looking for a quick match```"
             )
 
         if self.check_playing(ctx.author):
@@ -182,19 +183,7 @@ class Lobby(commands.Cog):
             )
 
         timeout: str = "30m"
-        description: str = metadata
-
-        if "--players" in metadata:
-            players_required: str = metadata.split(
-                "--players ")[1]
-            description: str = description[:metadata.find("--players")]
-
-            if not players_required.isdigit():
-                return await ctx.send("Players must be an integer")
-            if int(players_required) < 2:
-                return await ctx.send("A lobby requires two or more players")
-
-            players_required: int = int(players_required)
+        players_required: int = game_mode_to_players[channel.name.lower()]
         try:
             timeout: int = time_converter(timeout)
         except ValueError as e:
