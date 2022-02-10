@@ -57,10 +57,20 @@ class LobbyGate(disnake.ui.View):
 
             self.embed.clear_fields()
             self.embed.add_field(
+                name="Slots",
+                value=f"{len(self.lobby.players)}/{self.lobby.players_required}",
+                inline=False
+            ).add_field(
                 name="Players in lobby",
                 value="\n".join(
                     [str(player) for player in self.lobby.players]
-                ))
+                ),
+                inline=False
+            ).add_field(
+                name="Closing in",
+                value="30 minutes",
+                inline=False
+            )
             await self.message.edit(embed=self.embed)
             await self.lobby.join_alert(interaction.author)
 

@@ -82,13 +82,15 @@ class GameLobby:
 
         text_channel: TextChannel = await guild.create_text_channel(
             name=self.players[0].name + "'s Lobby",
-            overwrites=overwrites
+            overwrites=overwrites,
+            category=guild.get_channel(852014378404282391)
         )
         self.text_channel = text_channel
 
         voice_channel: TextChannel = await guild.create_voice_channel(
             name=self.players[0].name + "'s Lobby",
-            overwrites=overwrites
+            overwrites=overwrites,
+            category=guild.get_channel(852014378404282391)
         )
         self.voice_channel = voice_channel
 
@@ -96,6 +98,16 @@ class GameLobby:
             title=f"The lobby is filled!\n{self.info}",
             description=self.description,
             color=Colours.SUCCESS.value
+        ).add_field(
+            name="Slots",
+            value=f"{len(self.players)}/{self.players_required}",
+            inline=False
+        ).add_field(
+            name="Players in lobby",
+            value="\n".join(
+                [str(player) for player in self.players]
+            ),
+            inline=False
         )
         await self.message.edit(embed=embed, view=None)
 
@@ -132,13 +144,17 @@ class Lobby(commands.Cog):
             if player in lobby.players:
                 return lobby
 
-    @commands.command()
-    async def lobby(
+    @commands.group(pass_context=True, invoke_without_command=True)
+    async def lobby(self, ctx):
+        await ctx.send("Perhaps, you meant `!lobby create`?")
+
+    @lobby.command()
+    async def create(
         self,
         ctx: commands.Context,
         channel: TextChannel = None,
         *,
-        description: str = "No description provided",
+        description: str = "Looking for players",
     ) -> None:
 
         players_required: int = 4
@@ -156,7 +172,7 @@ class Lobby(commands.Cog):
             return await ctx.send(
                 "Since you are not in a game channel, you would need to "
                 "define the channel in the command too, optionally add a "
-                "description. Example:```!lobby #duos Looking for a quick match```"
+                "description. Example:```!lobby create #duos Looking for a quick match```"
             )
 
         if self.check_playing(ctx.author):
@@ -203,6 +219,10 @@ class Lobby(commands.Cog):
             description=description,
             color=Colours.SUCCESS.value
         ).add_field(
+            name="Slots",
+            value=f"{len(lobby.players)}/{players_required}",
+            inline=False
+        ).add_field(
             name="Players in lobby",
             value=ctx.author,
             inline=False
@@ -223,7 +243,7 @@ class Lobby(commands.Cog):
         view.message = message
         lobby.message = message
 
-    @commands.command()
+    @lobby.command()
     async def close(self, ctx: commands.Context) -> None:
         if self.check_playing(ctx.author):
             lobby: GameLobby = self.get_lobby(ctx.author)

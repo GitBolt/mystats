@@ -14,14 +14,23 @@ class Help(commands.Cog):
             title="Help is here!",
             color=Colours.DEFAULT.value
         ).add_field(
-            name="!lobby `<#channel>` `<meta_data>`",
-            value=("Channel and meta data are optional when you use this "
-                    "command in game specific channels. When using this "
-                    "command from other channel you need to specify the "
-                    "game channel and meta data, which is the description of "
-                    "the lobby and can have --mode flag to change game mode "
-                    "(duos, trios, quads)\nExample: `!lobby #duos --"
-                    ),
+            name="!lobby create `<#channel>` `<description>`",
+            value=("Welcome to MYSTATS LOBBY CREATOR.\n\n"
+                   "How to create a LOBBY?\n"
+                   "1. Go to the channel where you want to start the lobby\n"
+                   "2. Enter `!lobby create`\n"
+                   "3. Optionally provide the lobby description. "
+                   "For example `!lobby create looking for a quick match`\n"
+                   "3. An embed will be sent with the lobby information and buttons using which people can join\n\n"
+                   "How to join a LOBBY?\n"
+                   "1. Go the game channel to find any open lobby\n"
+                   "2. Click on 'Join' button in the lobby embed\n"
+                   "3. You will be added to the lobby and embed will show your name\n\n"
+                   "How to leave a LOBBY?\n"
+                   "1. Make sure you are in a lobby\n"
+                   "2. Make sure you are not the lobby leader\n"
+                   "3. Find your lobby's embed in your game channel and click on 'Leave' button"
+                   ),
             inline=False
         ).add_field(
             name="!close",
