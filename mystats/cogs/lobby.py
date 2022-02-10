@@ -26,14 +26,12 @@ class GameLobby:
         players_required: int,
         description: str,
         channel: TextChannel,
-        lobby_id: int
     ):
         self.bot: commands.Bot = bot
         self.players: list[Member] = [lobby_starter]
         self.players_required: int = players_required
         self.description: int = description
         self.channel: TextChannel = channel
-        self.lobby_id: int = lobby_id
 
         self.created_at: datetime = datetime.utcnow()
         self.started: bool = False
@@ -72,13 +70,13 @@ class GameLobby:
         }
 
         text_channel: TextChannel = await guild.create_text_channel(
-            name="lobby_" + str(self.lobby_id),
+            name=str(self.players[0]) + "_lobby",
             overwrites=overwrites
         )
         self.text_channel = text_channel
 
         voice_channel: TextChannel = await guild.create_voice_channel(
-            name="lobby_" + str(self.lobby_id),
+            name=str(self.players[0]) + "_lobby",
             overwrites=overwrites
         )
         self.voice_channel = voice_channel
@@ -135,9 +133,9 @@ class Lobby(commands.Cog):
         if channel is None or metadata is None:
             return await ctx.send(
                 "You need to define the channel and metadata both.\n"
-                "Optionally change the player amount and timeout "
-                "using `--players` and `--timeout` flags. Example:"
-                "```!lobby #bot-commands Warzone duos --players 2 --timeout 1h```"
+                "Optionally change the player amount "
+                "using `--players` flags. Example:"
+                "```!lobby #bot-commands Warzone duos --players 2```"
             )
 
         if self.check_playing(ctx.author):
@@ -168,25 +166,10 @@ class Lobby(commands.Cog):
         timeout: str = "30m"
         players_required: int = 4
         description: str = metadata
-        conversions: dict[str, str] = {
-            "s": "seconds",
-            "m": "minutes",
-            "h": "hours",
-            "d": "days"
-        }
-        readable_timeout: str = timeout[:-1] + " " + conversions[timeout[-1]]
-
-        if "--timeout" in metadata:
-            timeout: str = metadata.split(
-                "--timeout ")[1].split("--players")[0].replace(" ", "")
-
-            readable_timeout: str = timeout[:-1] + \
-                " " + conversions[timeout[-1]]
-            description: str = metadata[:metadata.find("--timeout")]
-
+        
         if "--players" in metadata:
             players_required: str = metadata.split(
-                "--players ")[1].split("--timeout")[0].replace(" ", "")
+                "--players ")[1]
             description: str = description[:metadata.find("--players")]
 
             if not players_required.isdigit():
@@ -206,7 +189,6 @@ class Lobby(commands.Cog):
             players_required,
             description,
             channel,
-            len(self.lobbies) + 1
         )
         self.lobbies.append(lobby)
 
@@ -223,11 +205,7 @@ class Lobby(commands.Cog):
             inline=False
         ).add_field(
             name="Closing in",
-            value=readable_timeout,
-            inline=False
-        ).add_field(
-            name="Lobby ID",
-            value=lobby.lobby_id,
+            value="30 minutes",
             inline=False
         ).set_footer(
             text="Waiting for players to join..."
