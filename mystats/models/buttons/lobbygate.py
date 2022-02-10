@@ -86,7 +86,7 @@ class LobbyGate(disnake.ui.View):
         if interaction.author == self.ctx.author:
             await interaction.response.send_message(
                 ("You cannot leave the lobby since you started it, "
-                 "enter `!close` if you want to close this lobby."),
+                 "enter `!lobby close` if you want to close this lobby."),
                 ephemeral=True
             )
 

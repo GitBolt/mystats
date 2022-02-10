@@ -33,7 +33,7 @@ class Help(commands.Cog):
                    ),
             inline=False
         ).add_field(
-            name="!close",
+            name="!lobby close",
             value="Use this command to close the lobby you started.",
             inline=False
         )
