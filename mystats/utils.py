@@ -19,5 +19,6 @@ def time_converter(time: str) -> int:
 game_mode_to_players: dict[str, int] = {
     "duos": 2,
     "trios": 3,
-    "quads": 4
+    "quads": 4,
+    "ranked-solo-duo": 2,
 }
