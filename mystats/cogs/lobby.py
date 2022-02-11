@@ -147,8 +147,12 @@ class Lobby(commands.Cog):
                 return lobby
 
     @commands.group(pass_context=True, invoke_without_command=True)
-    async def lobby(self, ctx):
+    async def lobby(self, ctx: commands.Context) -> None:
         await ctx.invoke(self.bot.get_command('help'))
+
+    @commands.command()
+    async def close(self, ctx: commands.Context) -> None:
+        await ctx.send("Perhaps, you meant `!lobby close`?")
 
     @lobby.command()
     async def create(
@@ -159,17 +163,11 @@ class Lobby(commands.Cog):
         description: str = "Looking for players",
     ) -> None:
 
-        if channel_arg is None:
-            return await ctx.send(
-                "Since you are not in a game channel, you would need to "
-                "define the channel in the command too, optionally add a "
-                "description. Example:```!lobby create #duos Looking for a quick match```"
-            )
-        else:
-            channel = channel_arg
-
         players_required: int = 4
         info: str = None
+        channel = channel_arg
+        if not channel:
+            channel = ctx.channel
 
         if [i for i in SUPPORTED_GAMES if i in channel.category.name.lower()]:
             game: str = [
@@ -179,6 +177,14 @@ class Lobby(commands.Cog):
 
             players_required: int = game_mode_to_players[mode]
 
+        elif channel_arg is None:
+            return await ctx.send(
+                "Since you are not in a game channel, you would need to "
+                "define the channel in the command too, optionally add a "
+                "description. Example:```!lobby create #duos Looking for a quick match```"
+            )
+        else:
+            return await ctx.send("Unsupported game channel")
 
         if self.check_playing(ctx.author):
             lobby: GameLobby = self.get_lobby(ctx.author)

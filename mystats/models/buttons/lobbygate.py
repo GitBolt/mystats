@@ -35,7 +35,9 @@ class LobbyGate(disnake.ui.View):
         )
         self.embed.color = Colours.WARNING.value
         await self.message.edit(embed=self.embed, view=None)
-        self.lobbieslist.remove(self.lobby)
+        if self.lobby in self.lobbieslist:
+            self.lobbieslist.remove(self.lobby)
+        
 
     @disnake.ui.button(label="Join", style=disnake.ButtonStyle.green)
     async def join(
