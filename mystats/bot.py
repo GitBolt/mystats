@@ -1,5 +1,6 @@
 import os
 from logger import log
+from aiohttp import ClientSession
 from dotenv import load_dotenv
 from disnake.ext import commands
 from disnake import Intents, Activity, ActivityType
@@ -9,7 +10,7 @@ load_dotenv()
 intents: Intents = Intents().all()
 
 bot: commands.Bot = commands.Bot(
-    command_prefix="!",
+    command_prefix=">",
     help_command=None,
     intents=intents
 )
@@ -22,6 +23,7 @@ async def on_ready() -> None:
             type=ActivityType.streaming,
             name=f"Enter !help for help"
         ))
+    bot.request_client = ClientSession()
     log.success(f"Logged in as {bot.user}")
 
 
