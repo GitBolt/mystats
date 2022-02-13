@@ -36,7 +36,7 @@ class Help(commands.Cog):
                    "to communicate with your new teammates "
                    "(look for Lobby Leaders name)\n\n"
                    "> __How to leave a LOBBY?__\n"
-                   "> 1. Type !lobby leave y\n"
+                   "> 1. Type !lobby leave\n"
                    "> 2. Your slot will become free and your name will "
                    "be removed from the embed\n"
                    "> 3. Type !lobby close to close the lobby YOU created.\n"
