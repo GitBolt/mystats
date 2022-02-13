@@ -14,28 +14,33 @@ class Help(commands.Cog):
             title="Welcome to MYSTATS LOBBY CREATOR",
             color=Colours.DEFAULT.value
         ).add_field(
-            name="!lobby create",
-            value=("\n> __How to create a LOBBY?__\n"
-                   "> 1. Go to the channel where you want to start the lobby\n"
-                   "> 2. Enter `!lobby create`\n"
-                   "> 3. Optionally provide the lobby description. "
-                   "For example `!lobby create looking for a quick match`\n"
-                   "> 4. An embed will be sent with the lobby information and buttons using which people can join\n\n"
-                   "> __How to join a LOBBY?__\n"
-                   "> 1. Make sure you are not the lobby leader\n"
-                   "> 2. Go the game channel to find any open lobby\n"
-                   "> 3. Click on 'Join' button in the lobby embed\n"
-                   "> 4. You will be added to the lobby and embed will show your name\n\n"
+            name=("Looking for a game? See below for instructions to "
+                  "create a lobby and connect with other players."),
+            value=("> __How to CREATE a LOBBY?__\n"
+                   "> 1. Go to the game channel of your desired game type. "
+                   "(Example: Warzon Duo's, Fornite Trio's)\n"
+                   "> 2. Type !lobby create\n"
+                   "> 3. Optionally provide the lobby description "
+                   "(after the word create in command) "
+                   "Example: !lobby create looking for a quick match\n"
+                   "> 4. A MESSAGE will be sent with the lobby information "
+                   "and buttons using which people can join\n"
+                   "> 5. Join Your Lobby Voice Channel / Type in Lobby "
+                   "Text Channel to communicate withyour new teammates  "
+                   "(located in LOBBIES discord category)\n\n"
+                   "> __How to JOIN a LOBBY?__\n"
+                   "> 1. Click on desired game type channel "
+                   "(Warzon Duo's, Fornite Trio's, etc...)\n"
+                   "> 2. Click on the 'JOIN' button in the lobby of your choice\n"
+                   "> 3. Join Lobbies Voice Channel / Type in Lobby Text Channel "
+                   "to communicate with your new teammates "
+                   "(look for Lobby Leaders name)\n\n"
                    "> __How to leave a LOBBY?__\n"
-                   "> 1. Make sure you are in a lobby\n"
-                   "> 2. Make sure you are not the lobby leader\n"
-                   "> 3. Find your lobby's embed in your game channel and click on 'Leave' button\n"
-                   "> 4. Your slot will become free and your name will be removed from the embed"
+                   "> 1. Type !lobby leave y\n"
+                   "> 2. Your slot will become free and your name will "
+                   "be removed from the embed\n"
+                   "> 3. Type !lobby close to close the lobby YOU created.\n"
                    ),
-            inline=False
-        ).add_field(
-            name="!lobby close",
-            value="Use this command to close the lobby you started.",
             inline=False
         )
         await ctx.send(embed=embed)

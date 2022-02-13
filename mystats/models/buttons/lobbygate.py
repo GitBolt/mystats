@@ -37,7 +37,6 @@ class LobbyGate(disnake.ui.View):
         await self.message.edit(embed=self.embed, view=None)
         if self.lobby in self.lobbieslist:
             self.lobbieslist.remove(self.lobby)
-        
 
     @disnake.ui.button(label="Join", style=disnake.ButtonStyle.green)
     async def join(
@@ -56,25 +55,8 @@ class LobbyGate(disnake.ui.View):
                 ephemeral=True
             )
             self.lobby.add_player(interaction.author)
-
-            self.embed.clear_fields()
-            self.embed.add_field(
-                name="Slots",
-                value=f"{len(self.lobby.players)}/{self.lobby.players_required}",
-                inline=False
-            ).add_field(
-                name="Players in lobby",
-                value="\n".join(
-                    [str(player) for player in self.lobby.players]
-                ),
-                inline=False
-            ).add_field(
-                name="Closing in",
-                value="30 minutes",
-                inline=False
-            )
-            await self.message.edit(embed=self.embed)
             await self.lobby.join_alert(interaction.author)
+            await self.lobby.update_embed()
 
             if len(self.lobby.players) == self.lobby.players_required:
                 await self.lobby.start()
@@ -103,11 +85,5 @@ class LobbyGate(disnake.ui.View):
                 ephemeral=True
             )
             self.lobby.remove_player(interaction.author)
-            self.embed.clear_fields()
-            self.embed.add_field(
-                name="Players in lobby",
-                value="\n".join(
-                    [str(player) for player in self.lobby.players]
-                ))
-            await self.message.edit(embed=self.embed)
             await self.lobby.leave_alert(interaction.author)
+            await self.lobby.update_embed()

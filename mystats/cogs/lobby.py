@@ -95,6 +95,26 @@ class GameLobby:
         )
         self.voice_channel = voice_channel
 
+    async def update_embed(self) -> None:
+        self.embed.clear_fields()
+        self.embed.add_field(
+            name="Slots",
+            value=f"{len(self.players)}/{self.players_required}",
+            inline=False
+        ).add_field(
+            name="Players in lobby",
+            value="\n".join(
+                [str(player) for player in self.players]
+            ),
+            inline=False
+        ).add_field(
+            name="Closing in",
+            value="30 minutes",
+            inline=False
+        )
+        await self.message.edit(embed=self.embed)
+
+
     async def start(self) -> None:
         embed: Embed = Embed(
             title=f"The lobby is filled!\n{self.info}",
@@ -175,7 +195,7 @@ class Lobby(commands.Cog):
             mode: str = channel.name.lower()
             info: str = f"{game} {mode}"
 
-            players_required: int = game_mode_to_players[mode]
+            players_required: int = game_mode_to_players.get(mode, 4)
 
         elif channel_arg is None:
             return await ctx.send(
@@ -209,7 +229,7 @@ class Lobby(commands.Cog):
             )
 
         timeout: str = "30m"
-        players_required: int = game_mode_to_players[channel.name.lower()]
+        players_required: int = game_mode_to_players.get(channel.name.lower(), 4)
         try:
             timeout: int = time_converter(timeout)
         except ValueError as e:
@@ -257,6 +277,7 @@ class Lobby(commands.Cog):
         message: Message = await channel.send(embed=embed, view=view)
         view.message = message
         lobby.message = message
+        lobby.embed = embed
 
     @lobby.command()
     async def close(self, ctx: commands.Context) -> None:
@@ -286,6 +307,17 @@ class Lobby(commands.Cog):
                 await ctx.send("The lobby has been closed.")
         else:
             await ctx.send("You have not started any lobby.")
+
+    @lobby.command()
+    async def leave(self, ctx: commands.Context) -> None:
+        if not self.check_playing(ctx.author):
+            return await ctx.send("You are not in any lobby")
+        lobby = self.get_lobby(ctx.author)
+        if ctx.author == lobby.players[0]:
+            return await ctx.send("You cannot leave the lobby since you are the lobby leader.")
+        lobby.remove_player(ctx.author)
+        await lobby.update_embed()
+        await ctx.reply("Successfully left the lobby")
 
 
 def setup(bot):
