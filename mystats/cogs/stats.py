@@ -94,9 +94,6 @@ class Stats(commands.Cog):
         ).add_field(
             name="Kills per game",
             value=last20["killsPerGame"]
-        ).add_field(
-            name="Average life time",
-            value=round(last20["avgLifeTime"], 3)
         ).set_footer(text=f"Game: {game.capitalize()}"
                      ).set_thumbnail(url=(
                          "https://cdn.discordapp.com/avatars/940719011405123625"
