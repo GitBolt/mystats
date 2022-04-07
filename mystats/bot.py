@@ -10,7 +10,7 @@ load_dotenv()
 intents: Intents = Intents().all()
 
 bot: commands.Bot = commands.Bot(
-    command_prefix=">",
+    command_prefix="!",
     help_command=None,
     intents=intents
 )

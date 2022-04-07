@@ -27,7 +27,7 @@ class Stats(commands.Cog):
             "playerPlatform": platform,
             "playerGame": game
         }
-        if platform not in platforms:
+        if platform.lower() not in platforms:
             return await ctx.send(
                 "Platform not supported. Enter one of these - uno, psn, xbox, battle"
             )
