@@ -19,7 +19,7 @@ class Stats(commands.Cog):
                     game: str = "warzone"
                     ) -> None:
         if player_username is None or platform is None:
-            return await ctx.send("You need to enter player Id and platoform")
+            return await ctx.send("You need to enter player Id and platform")
 
         platforms = ["uno", "psn", "xbox", "battle"]
         data: dict[str, str] = {
