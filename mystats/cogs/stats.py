@@ -21,7 +21,7 @@ class Stats(commands.Cog):
         if player_username is None or platform is None:
             return await ctx.send("You need to enter player Id and platform")
 
-        platforms = ["uno", "psn", "xbox", "battle"]
+        platforms = ["atvi", "psn", "xbox", "battle"]
         data: dict[str, str] = {
             "playerUsername": player_username,
             "playerPlatform": platform,
@@ -29,7 +29,7 @@ class Stats(commands.Cog):
         }
         if platform.lower() not in platforms:
             return await ctx.send(
-                "Platform not supported. Enter one of these - uno, psn, xbox, battle"
+                "Platform not supported. Enter one of these - atvi, psn, xbox, battle"
             )
 
         res_data: dict[str, Any] = None
@@ -42,10 +42,10 @@ class Stats(commands.Cog):
             if res.status == 404:
                 return await ctx.send(f"Could not find **{player_username}** on **{platform.capitalize()}**")
             res_data = await res.json()
-
         overall = res_data["overall"]
         last20 = res_data["last20Matches"]
 
+        url: str = f"https://www.mystats.gg/{game}/profile/{platform}/{player_username}"
         embed: Embed = Embed(
             title=f"Stats for {res_data['username']}",
             color=Colours.SUCCESS.value
@@ -94,11 +94,13 @@ class Stats(commands.Cog):
         ).add_field(
             name="Kills per game",
             value=last20["killsPerGame"]
-        ).set_footer(text=f"Game: {game.capitalize()}"
-                     ).set_thumbnail(url=(
-                         "https://cdn.discordapp.com/avatars/940719011405123625"
-                         "/a39422f00e782226b50c8bcb2d80dadf.webp?size=80s"
-                     ))
+        ).add_field(
+            name="For full stats breakdown, visit: ",
+            value=url
+        ).set_thumbnail(url=(
+            "https://cdn.discordapp.com/avatars/940719011405123625"
+            "/a39422f00e782226b50c8bcb2d80dadf.webp?size=80s"
+        ))
         await ctx.send(embed=embed)
 
 
