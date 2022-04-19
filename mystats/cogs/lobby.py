@@ -35,6 +35,7 @@ class GameLobby:
         lobby_starter: Member,
         players_required: int,
         description: str,
+        region: str,
         info: str,
         channel: TextChannel,
     ):
@@ -42,6 +43,7 @@ class GameLobby:
         self.players: list[Member] = [lobby_starter]
         self.players_required: int = players_required
         self.description: int = description
+        self.region: str = region
         self.info: str = info
         self.channel: TextChannel = channel
 
@@ -106,6 +108,10 @@ class GameLobby:
             value="\n".join(
                 [str(player) for player in self.players]
             ),
+            inline=False
+        ).add_field(
+            name="Region",
+            value=self.region,
             inline=False
         ).add_field(
             name="Closing in",
@@ -178,6 +184,7 @@ class Lobby(commands.Cog):
     async def create(
         self,
         ctx: commands.Context,
+        region: str = None,
         channel_arg: TextChannel = None,
         *,
         description: str = "Looking for players",
@@ -206,6 +213,8 @@ class Lobby(commands.Cog):
         else:
             return await ctx.send("Unsupported game channel")
 
+        if not region:
+            return await ctx.send("You need to add the lobby region as well.")
         if self.check_playing(ctx.author):
             lobby: GameLobby = self.get_lobby(ctx.author)
 
@@ -216,6 +225,10 @@ class Lobby(commands.Cog):
             ).add_field(
                 name="Started",
                 value=lobby.time_elapsed()+" ago",
+                inline=False
+            ).add_field(
+                name="Region",
+                value=region,
                 inline=False
             ).add_field(
                 name="Players in lobby",
@@ -240,6 +253,7 @@ class Lobby(commands.Cog):
             ctx.author,
             players_required,
             description,
+            region,
             info,
             channel,
         )
@@ -260,6 +274,10 @@ class Lobby(commands.Cog):
         ).add_field(
             name="Players in lobby",
             value=ctx.author,
+            inline=False
+        ).add_field(
+            name="Region",
+            value=region,
             inline=False
         ).add_field(
             name="Closing in",
