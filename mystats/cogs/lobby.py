@@ -36,6 +36,7 @@ class GameLobby:
         players_required: int,
         description: str,
         region: str,
+        mic_req: bool,
         info: str,
         channel: TextChannel,
     ):
@@ -44,6 +45,7 @@ class GameLobby:
         self.players_required: int = players_required
         self.description: int = description
         self.region: str = region
+        self.mic_req: bool = mic_req
         self.info: str = info
         self.channel: TextChannel = channel
 
@@ -90,12 +92,13 @@ class GameLobby:
         )
         self.text_channel = text_channel
 
-        voice_channel: TextChannel = await guild.create_voice_channel(
-            name=self.players[0].name + "'s Lobby",
-            overwrites=overwrites,
-            category=guild.get_channel(LOBBY_CATEGORY_ID)
-        )
-        self.voice_channel = voice_channel
+        if not self.mic_req:
+            voice_channel: TextChannel = await guild.create_voice_channel(
+                name=self.players[0].name + "'s Lobby",
+                overwrites=overwrites,
+                category=guild.get_channel(LOBBY_CATEGORY_ID)
+            )
+            self.voice_channel = voice_channel
 
     async def update_embed(self) -> None:
         self.embed.clear_fields()
@@ -119,7 +122,6 @@ class GameLobby:
             inline=False
         )
         await self.message.edit(embed=self.embed)
-
 
     async def start(self) -> None:
         embed: Embed = Embed(
@@ -185,6 +187,7 @@ class Lobby(commands.Cog):
         self,
         ctx: commands.Context,
         region: str = None,
+        mic_req: str = None,
         channel_arg: TextChannel = None,
         *,
         description: str = "Looking for players",
@@ -215,6 +218,9 @@ class Lobby(commands.Cog):
 
         if not region:
             return await ctx.send("You need to add the lobby region as well.")
+        if not mic_req or mic_req.lower() not in ["nomic", "micreq"]:
+            return await ctx.send("You need to specifiy if mic is not required or not by adding 'nomic' or 'micreq'")
+
         if self.check_playing(ctx.author):
             lobby: GameLobby = self.get_lobby(ctx.author)
 
@@ -242,7 +248,8 @@ class Lobby(commands.Cog):
             )
 
         timeout: str = "30m"
-        players_required: int = game_mode_to_players.get(channel.name.lower(), 4)
+        players_required: int = game_mode_to_players.get(
+            channel.name.lower(), 4)
         try:
             timeout: int = time_converter(timeout)
         except ValueError as e:
@@ -254,6 +261,7 @@ class Lobby(commands.Cog):
             players_required,
             description,
             region,
+            True if mic_req == "nomic" else False,
             info,
             channel,
         )
@@ -315,7 +323,8 @@ class Lobby(commands.Cog):
                     await lobby.close()
                     self.lobbies.remove(lobby)
                     await lobby.text_channel.delete()
-                    await lobby.voice_channel.delete()
+                    if not lobby.mic_req:
+                        await lobby.voice_channel.delete()
                     await ctx.send("The lobby has been closed.")
             else:
                 await lobby.close()

@@ -11,11 +11,10 @@ load_dotenv()
 intents: Intents = Intents().all()
 
 bot: commands.Bot = commands.Bot(
-    command_prefix="!",
+    command_prefix=">" if os.getenv("PREFIX") else "!",
     help_command=None,
     intents=intents
 )
-
 
 @bot.event
 async def on_ready() -> None:
