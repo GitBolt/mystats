@@ -124,8 +124,10 @@ class GameLobby:
         desc = ""
         for user in users:
             data = await user.find_one({"game": self.game.lower()})
-            desc += f"{self.players[users.index(user)]}: " + f"{data['id']}\n" if data else "None\n"
-
+            if data:
+                desc += f"{self.players[users.index(user)]}: {data['id']}\n"
+            else:
+                desc += f"{self.players[users.index(user)]}: *Game not linked*\n"
         embed: Embed = Embed(title="Player IDs", description=desc, color=Colours.INFO.value
                              )
         message = await self.id_message.edit(embed=embed)
@@ -230,10 +232,9 @@ class Lobby(commands.Cog):
         if not channel:
             channel = ctx.channel
         channel_name = channel.category.name.lower()
-        if [i for i in SUPPORTED_GAMES if i in channel_name]:
-            game: str = [
-                i for i in SUPPORTED_GAMES if i in channel_name
-            ][0].capitalize()
+        game_list = [i for i in SUPPORTED_GAMES if i in channel_name]
+        if game_list:
+            game: str = game_list[0].capitalize()
             mode: str = channel.name.lower()
             info: str = f"{game} {mode}"
 

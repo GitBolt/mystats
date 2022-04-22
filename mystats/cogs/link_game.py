@@ -5,6 +5,13 @@ from disnake.ext import commands
 from constants import Colours
 
 
+SUPPORTED_GAMES: tuple[str, str, str, str] = (
+    "warzone",
+    "fortnite",
+    "apex",
+    "halo"
+)
+
 class LinkGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -17,12 +24,19 @@ class LinkGame(commands.Cog):
     async def game(
             self,
             ctx: commands.Context,
-            game_name: str = None,
             player_id: str = None,
             platform: str = None
     ) -> None:
-        if not game_name or not player_id or not platform:
-            return await ctx.send("You need to provide the game name, id and platform")
+        if not player_id or not platform:
+            return await ctx.send("You need to provide the id and platform")
+
+        channel_name = ctx.channel.category.name.lower()
+        game_list = [i for i in SUPPORTED_GAMES if i in channel_name]
+        game_name = None
+        if game_list:
+            game_name: str = game_list[0].capitalize()
+        else:
+            return await ctx.send("Unsupported channel, make sure you are in a game category.")
 
         platforms = ["uno", "psn", "xbox", "battle"]
         if platform.lower() not in platforms:
