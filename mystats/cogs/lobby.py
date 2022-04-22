@@ -110,11 +110,25 @@ class GameLobby:
         desc = ""
         for user in users:
             data = await user.find_one({"game": self.game.lower()})
-            desc += f"{self.players[users.index(user)]}: {data['id']}\n"
+            desc += f"{self.players[users.index(user)]}: " + f"{data['id']}\n" if data else "None\n"
+
 
         embed: Embed = Embed(title="Player IDs", description=desc, color=Colours.INFO.value
                              )
-        await self.text_channel.send(embed=embed)
+        message = await self.text_channel.send(embed=embed)
+        self.id_message = message
+
+    async def update_id_embed(self) -> None:
+        db = self.bot.mongo_client["LinkGame"]
+        users = [db[str(player.id)][self.platform] for player in self.players]
+        desc = ""
+        for user in users:
+            data = await user.find_one({"game": self.game.lower()})
+            desc += f"{self.players[users.index(user)]}: " + f"{data['id']}\n" if data else "None\n"
+
+        embed: Embed = Embed(title="Player IDs", description=desc, color=Colours.INFO.value
+                             )
+        message = await self.id_message.edit(embed=embed)
 
     async def update_embed(self) -> None:
         self.embed.clear_fields()
@@ -319,7 +333,7 @@ class Lobby(commands.Cog):
             inline=False
         ).add_field(
             name="Platform",
-            value=self.platform.upper(),
+            value=platform.upper(),
             inline=False
         ).add_field(
             name="Closing in",

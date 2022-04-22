@@ -57,6 +57,7 @@ class LobbyGate(disnake.ui.View):
             self.lobby.add_player(interaction.author)
             await self.lobby.join_alert(interaction.author)
             await self.lobby.update_embed()
+            await self.lobby.update_id_embed()
 
             if len(self.lobby.players) == self.lobby.players_required:
                 await self.lobby.start()
@@ -87,3 +88,4 @@ class LobbyGate(disnake.ui.View):
             self.lobby.remove_player(interaction.author)
             await self.lobby.leave_alert(interaction.author)
             await self.lobby.update_embed()
+            await self.lobby.update_id_embed()
