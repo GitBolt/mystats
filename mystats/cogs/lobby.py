@@ -35,19 +35,23 @@ class GameLobby:
         lobby_starter: Member,
         players_required: int,
         description: str,
+        platform: str,
         region: str,
         mic_req: bool,
         info: str,
         channel: TextChannel,
+        game: str
     ):
         self.bot: commands.Bot = bot
         self.players: list[Member] = [lobby_starter]
         self.players_required: int = players_required
         self.description: int = description
         self.region: str = region
+        self.platform: str = platform
         self.mic_req: bool = mic_req
         self.info: str = info
         self.channel: TextChannel = channel
+        self.game: str = game
 
         self.created_at: datetime = datetime.utcnow()
         self.started: bool = False
@@ -99,6 +103,18 @@ class GameLobby:
                 category=guild.get_channel(LOBBY_CATEGORY_ID)
             )
             self.voice_channel = voice_channel
+
+    async def drop_game_ids(self) -> None:
+        db = self.bot.mongo_client["LinkGame"]
+        users = [db[str(player.id)][self.platform] for player in self.players]
+        desc = ""
+        for user in users:
+            data = await user.find_one({"game": self.game.lower()})
+            desc += f"{self.players[users.index(user)]}: {data['id']}\n"
+
+        embed: Embed = Embed(title="Player IDs", description=desc, color=Colours.INFO.value
+                             )
+        await self.text_channel.send(embed=embed)
 
     async def update_embed(self) -> None:
         self.embed.clear_fields()
@@ -187,6 +203,7 @@ class Lobby(commands.Cog):
         self,
         ctx: commands.Context,
         region: str = None,
+        platform: str = None,
         mic_req: str = None,
         channel_arg: TextChannel = None,
         *,
@@ -198,10 +215,11 @@ class Lobby(commands.Cog):
         channel = channel_arg
         if not channel:
             channel = ctx.channel
-
-        if [i for i in SUPPORTED_GAMES if i in channel.category.name.lower()]:
+        channel_name = channel.category.name.lower()
+        if [i for i in SUPPORTED_GAMES if i in channel_name]:
             game: str = [
-                i for i in SUPPORTED_GAMES if i in channel.category.name.lower()][0].capitalize()
+                i for i in SUPPORTED_GAMES if i in channel_name
+            ][0].capitalize()
             mode: str = channel.name.lower()
             info: str = f"{game} {mode}"
 
@@ -218,8 +236,13 @@ class Lobby(commands.Cog):
 
         if not region:
             return await ctx.send("You need to add the lobby region as well.")
-        if not mic_req or mic_req.lower() not in ["nomic", "micreq"]:
-            return await ctx.send("You need to specifiy if mic is not required or not by adding 'nomic' or 'micreq'")
+
+        platforms_options = ["atvi", "psn", "xbox", "battle"]
+        if not platform or platform not in platforms_options:
+            return await ctx.send("You need to add a platform from the following - psn, xbox, atvi battle")
+
+        if not mic_req or mic_req.lower() not in ["no-mic", "mic-req"]:
+            return await ctx.send("You need to specifiy if mic is not required or not by adding 'no-mic' or 'mic-req'")
 
         if self.check_playing(ctx.author):
             lobby: GameLobby = self.get_lobby(ctx.author)
@@ -235,6 +258,10 @@ class Lobby(commands.Cog):
             ).add_field(
                 name="Region",
                 value=region,
+                inline=False
+            ).add_field(
+                name="Platform",
+                value=platform.upper(),
                 inline=False
             ).add_field(
                 name="Players in lobby",
@@ -260,13 +287,16 @@ class Lobby(commands.Cog):
             ctx.author,
             players_required,
             description,
+            platform,
             region,
-            True if mic_req == "nomic" else False,
+            True if mic_req == "no-mic" else False,
             info,
             channel,
+            game
         )
         self.lobbies.append(lobby)
         await lobby.create_channels()
+        await lobby.drop_game_ids()
         embed: Embed = Embed(
             title=f"A NEW LOBBY HAS BEEN CREATED!",
             description=description,
@@ -286,6 +316,10 @@ class Lobby(commands.Cog):
         ).add_field(
             name="Region",
             value=region,
+            inline=False
+        ).add_field(
+            name="Platform",
+            value=self.platform.upper(),
             inline=False
         ).add_field(
             name="Closing in",
