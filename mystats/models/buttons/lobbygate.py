@@ -37,6 +37,9 @@ class LobbyGate(disnake.ui.View):
         await self.message.edit(embed=self.embed, view=None)
         if self.lobby in self.lobbieslist:
             self.lobbieslist.remove(self.lobby)
+        await self.lobby.text_channel.delete()
+        if not self.lobby.no_mic:
+            await self.lobby.voice_channel.delete()
 
     @disnake.ui.button(label="Join", style=disnake.ButtonStyle.green)
     async def join(

@@ -37,7 +37,7 @@ class GameLobby:
         description: str,
         platform: str,
         region: str,
-        mic_req: bool,
+        no_mic: bool,
         info: str,
         channel: TextChannel,
         game: str
@@ -48,7 +48,7 @@ class GameLobby:
         self.description: int = description
         self.region: str = region
         self.platform: str = platform
-        self.mic_req: bool = mic_req
+        self.no_mic: bool = no_mic
         self.info: str = info
         self.channel: TextChannel = channel
         self.game: str = game
@@ -96,7 +96,7 @@ class GameLobby:
         )
         self.text_channel = text_channel
 
-        if not self.mic_req:
+        if not self.no_mic:
             voice_channel: TextChannel = await guild.create_voice_channel(
                 name=self.players[0].name + "'s Lobby",
                 overwrites=overwrites,
@@ -220,7 +220,7 @@ class Lobby(commands.Cog):
         ctx: commands.Context,
         region: str = None,
         platform: str = None,
-        mic_req: str = None,
+        no_mic: str = None,
         *,
         description: str = "Looking for players",
     ) -> None:
@@ -240,14 +240,14 @@ class Lobby(commands.Cog):
             return await ctx.send("Unsupported game channel")
 
         help_message = "Invalid or missing parameters, use the following format:```!lobby create <region> <platform> <mic-req> <description>```"
-        if not region or not platform or not mic_req:
+        if not region or not platform or not no_mic:
             return await ctx.send(help_message)
 
         platforms_options = ["atvi", "psn", "xbox", "battle"]
         if platform not in platforms_options:
             return await ctx.send("You need to add a platform from the following - psn, xbox, atvi battle")
 
-        if mic_req.lower() not in ["no-mic", "mic-req"]:
+        if no_mic.lower() not in ["no-mic", "mic-req"]:
             return await ctx.send("You need to specifiy if mic is not required or not by adding 'no-mic' or 'mic-req'")
 
         if self.check_playing(ctx.author):
@@ -280,7 +280,7 @@ class Lobby(commands.Cog):
                 embed=embed
             )
 
-        timeout: str = "30m"
+        timeout: str = "10s"
         players_required: int = game_mode_to_players.get(
             channel.name.lower(), 4)
         try:
@@ -295,7 +295,7 @@ class Lobby(commands.Cog):
             description,
             platform,
             region,
-            True if mic_req == "no-mic" else False,
+            True if no_mic == "no-mic" else False,
             info,
             channel,
             game
@@ -363,7 +363,7 @@ class Lobby(commands.Cog):
                     await lobby.close()
                     self.lobbies.remove(lobby)
                     await lobby.text_channel.delete()
-                    if not lobby.mic_req:
+                    if not lobby.no_mic:
                         await lobby.voice_channel.delete()
                     await ctx.send("The lobby has been closed.")
             else:
