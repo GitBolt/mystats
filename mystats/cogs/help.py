@@ -20,20 +20,16 @@ class Help(commands.Cog):
                    "> 1. Go to the game channel of your desired game type. "
                    "(Example: Warzon Duo's, Fornite Trio's)\n"
                    "> 2. Type !lobby create <region> <platform> <mic-req>\n"
-                   "> 3. Optionally provide the lobby description "
-                   "(after the defining mic requirement in command) "
-                   "Example: !lobby create eu psn no-mic looking for a quick match\n"
+                   "> 3. Optionally provide the lobby description. "
+                   "Example: ```!lobby create eu psn no-mic looking for a quick match```\n"
                    "> 4. A MESSAGE will be sent with the lobby information "
-                   "and buttons using which people can join\n"
-                   "> 5. Join Your Lobby Voice Channel / Type in Lobby "
-                   "Text Channel to communicate withyour new teammates  "
-                   "(located in LOBBIES discord category)\n\n"
+                   "and buttons using which people can join\n\n"
                    "> __How to JOIN a LOBBY?__\n"
                    "> 1. Click on desired game type channel "
-                   "(Warzon Duo's, Fornite Trio's, etc...)\n"
+                   "> (Warzon Duo's, Fornite Trio's, etc...)\n"
                    "> 2. Click on the 'JOIN' button in the lobby of your choice\n"
                    "> 3. Join Lobbies Voice Channel / Type in Lobby Text Channel "
-                   "to communicate with your new teammates "
+                   "> to communicate with your new teammates "
                    "(look for Lobby Leaders name)\n\n"
                    "> __How to leave a LOBBY?__\n"
                    "> 1. Type !lobby leave\n"
@@ -45,17 +41,19 @@ class Help(commands.Cog):
         ).add_field(
             name=("Want to link a game to your Discord account? Follow the command format"),
             value=(
-                "1. Go the game category's 'link game' channel\n"
-                "2. Enter `!link game <id> <platform>\n"
-                "3. Platform can be one of the following: uno, psn, xbox, battle, origin, riot and steam"
+                "> 1. Go the game category's 'link game' channel\n"
+                "> 2. Enter ```!link game <id> <platform>```\n"
+                "> 3. Platform can be one of the following: uno, psn, xbox, battle, origin, riot and steam"
+                "> 4. To remove a linked game, follow the exact same format with the difference being "
+                "the 'game' to be replace by 'remove' in the command. Example:```!link remove <id> <platform>```"
             ),
             inline=False
         ).add_field(
             name=("Looking to have a look into in game stats of a player? Have a look into the instructions below"),
             value=(
-                "1. Go to any text channel\n"
-                "2. Enter `!stats <player_id> <platform> <game>\n"
-                "3. Platform can be one of the following: uno, psn, xbox, battle, origin, riot and steam"
+                "> 1. Go to any text channel\n"
+                "> 2. Enter ```!stats <player_id> <platform> <game>```\n"
+                "> 3. Platform can be one of the following: uno, psn, xbox, battle, origin, riot and steam"
             ),
             inline=False
         )
