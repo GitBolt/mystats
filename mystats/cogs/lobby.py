@@ -122,12 +122,12 @@ class GameLobby:
         db = self.bot.mongo_client["LinkGame"]
         users = [db[str(player.id)][self.platform] for player in self.players]
         desc = ""
-        for user in users:
-            data = await user.find_one({"game": self.game.lower()})
+        for player in self.players:
+            data = await users[players.index(player)].find_one({"game": self.game.lower()})
             if data:
-                desc += f"{self.players[users.index(user)]}: {data['id']}\n"
+                desc += f"{player}: {data['id']}\n"
             else:
-                desc += f"{self.players[users.index(user)]}: *Game not linked*\n"
+                desc += f"{player}: *Game not linked*\n"
         embed: Embed = Embed(title="Player IDs", description=desc, color=Colours.INFO.value
                              )
         message = await self.id_message.edit(embed=embed)
@@ -221,42 +221,33 @@ class Lobby(commands.Cog):
         region: str = None,
         platform: str = None,
         mic_req: str = None,
-        channel_arg: TextChannel = None,
         *,
         description: str = "Looking for players",
     ) -> None:
 
         players_required: int = 4
         info: str = None
-        channel = channel_arg
-        if not channel:
-            channel = ctx.channel
-        channel_name = channel.category.name.lower()
-        game_list = [i for i in SUPPORTED_GAMES if i in channel_name]
+        channel = ctx.channel
+        category_name: str = channel.category.name.lower()
+        game_list = [i for i in SUPPORTED_GAMES if i in category_name]
         if game_list:
             game: str = game_list[0].capitalize()
             mode: str = channel.name.lower()
             info: str = f"{game} {mode}"
-
             players_required: int = game_mode_to_players.get(mode, 4)
 
-        elif channel_arg is None:
-            return await ctx.send(
-                "Since you are not in a game channel, you would need to "
-                "define the channel in the command too, optionally add a "
-                "description. Example:```!lobby create #duos Looking for a quick match```"
-            )
         else:
             return await ctx.send("Unsupported game channel")
 
-        if not region:
-            return await ctx.send("You need to add the lobby region as well.")
+        help_message = "Invalid or missing parameters, use the following format:```!lobby create <region> <platform> <mic-req> <description>```"
+        if not region or not platform or not mic_req:
+            return await ctx.send(help_message)
 
         platforms_options = ["atvi", "psn", "xbox", "battle"]
-        if not platform or platform not in platforms_options:
+        if platform not in platforms_options:
             return await ctx.send("You need to add a platform from the following - psn, xbox, atvi battle")
 
-        if not mic_req or mic_req.lower() not in ["no-mic", "mic-req"]:
+        if mic_req.lower() not in ["no-mic", "mic-req"]:
             return await ctx.send("You need to specifiy if mic is not required or not by adding 'no-mic' or 'mic-req'")
 
         if self.check_playing(ctx.author):

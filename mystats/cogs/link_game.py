@@ -39,9 +39,11 @@ class LinkGame(commands.Cog):
             return await ctx.send("Unsupported channel, make sure you are in a game category.")
 
         platforms = ["uno", "psn", "xbox", "battle"]
+        if len(platform.split()) > 1:
+            return await ctx.send("Invalid format, enter the command in the following way:\n```!link game <id> <platform>```")
         if platform.lower() not in platforms:
             return await ctx.send("Platform not supported")
-
+        
         db = self.bot.mongo_client["LinkGame"]
         user_collection = db[str(ctx.author.id)]
         
