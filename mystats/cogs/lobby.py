@@ -280,7 +280,7 @@ class Lobby(commands.Cog):
                 embed=embed
             )
 
-        timeout: str = "10s"
+        timeout: str = "30m"
         players_required: int = game_mode_to_players.get(
             channel.name.lower(), 4)
         try:
