@@ -38,7 +38,7 @@ class LinkGame(commands.Cog):
         else:
             return await ctx.send("Unsupported channel, make sure you are in a game category.")
 
-        platforms = ["uno", "psn", "xbox", "battle"]
+        platforms = ["uno", "psn", "xbox", "battle", "origin", "riot", "steam"]
         if len(platform.split()) > 1:
             return await ctx.send("Invalid format, enter the command in the following way:\n```!link game <id> <platform>```")
         if platform.lower() not in platforms:

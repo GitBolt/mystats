@@ -243,9 +243,9 @@ class Lobby(commands.Cog):
         if not region or not platform or not no_mic:
             return await ctx.send(help_message)
 
-        platforms_options = ["atvi", "psn", "xbox", "battle"]
+        platforms_options = ["uno", "psn", "xbox", "battle", "origin", "riot", "steam"]
         if platform not in platforms_options:
-            return await ctx.send("You need to add a platform from the following - psn, xbox, atvi battle")
+            return await ctx.send("You need to add a platform from the following - psn, xbox, atvi battle, origin, riot, steam")
 
         if no_mic.lower() not in ["no-mic", "mic-req"]:
             return await ctx.send("You need to specifiy if mic is not required or not by adding 'no-mic' or 'mic-req'")
