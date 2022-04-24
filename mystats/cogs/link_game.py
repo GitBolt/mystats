@@ -53,5 +53,38 @@ class LinkGame(commands.Cog):
         await user_collection[platform].insert_one({"game": game_name, "id": player_id})
         await ctx.send("Successfully linked game")
 
+    @link.command()
+    async def remove(
+            self,
+            ctx: commands.Context,
+            player_id: str = None,
+            platform: str = None
+    ) -> None:
+        if not player_id or not platform:
+            return await ctx.send("You need to provide the id and platform")
+
+        channel_name = ctx.channel.category.name.lower()
+        game_list = [i for i in SUPPORTED_GAMES if i in channel_name]
+        game_name = None
+        if game_list:
+            game_name: str = game_list[0].capitalize()
+        else:
+            return await ctx.send("Unsupported channel, make sure you are in a game category.")
+
+        platforms = ["uno", "psn", "xbox", "battle", "origin", "riot", "steam"]
+        if len(platform.split()) > 1:
+            return await ctx.send("Invalid format, enter the command in the following way:\n```!link game <id> <platform>```")
+        if platform.lower() not in platforms:
+            return await ctx.send("Platform not supported")
+        
+        db = self.bot.mongo_client["LinkGame"]
+        user_collection = db[str(ctx.author.id)]
+        
+        existing_data = await user_collection[platform].find_one({"game": game_name, "id": player_id})
+        if not existing_data:
+            return await ctx.send("You have not linked the game with the id and platform")
+        await user_collection[platform].delete_one(existing_data)
+        await ctx.send("Successfully removed linked game")
+
 def setup(bot):
     bot.add_cog(LinkGame(bot))
