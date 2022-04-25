@@ -43,7 +43,7 @@ class Help(commands.Cog):
             value=(
                 "> 1. Go the game category's 'link game' channel\n"
                 "> 2. Enter ```!link game <id> <platform>```\n"
-                "> 3. Platform can be one of the following: epic, psn, xbox, battle, origin, riot and steam"
+                "> 3. Platform can be one of the following: acti, psn, xbox, battle, origin, riot, epic and steam"
                 "> 4. To remove a linked game, follow the exact same format with the difference being "
                 "the 'game' to be replace by 'remove' in the command. Example:```!link remove <id> <platform>```"
             ),
@@ -53,7 +53,7 @@ class Help(commands.Cog):
             value=(
                 "> 1. Go to any text channel\n"
                 "> 2. Enter ```!stats <player_id> <platform> <game>```\n"
-                "> 3. Platform can be one of the following: epic, psn, xbox, battle, origin, riot and steam"
+                "> 3. Platform can be one of the following: acti, psn, xbox, battle, origin, riot, epic and steam"
             ),
             inline=False
         )

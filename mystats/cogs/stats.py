@@ -21,7 +21,7 @@ class Stats(commands.Cog):
         if player_username is None or platform is None:
             return await ctx.send("You need to enter player Id and platform")
 
-        platforms = ["epic", "psn", "xbox", "battle", "origin", "riot", "steam"]
+        platforms = ["acti", "psn", "xbox", "battle", "origin", "riot", "epic", "steam"]
         data: dict[str, str] = {
             "playerUsername": player_username,
             "playerPlatform": platform,
@@ -29,7 +29,7 @@ class Stats(commands.Cog):
         }
         if platform.lower() not in platforms:
             return await ctx.send(
-                "Platform not supported. Enter one of these - atvi, psn, xbox, battle, origin, riot, steam"
+                "Platform not supported. Enter one of these - acti, psn, xbox, battle, origin, riot, epic and steam"
             )
 
         res_data: dict[str, Any] = None
