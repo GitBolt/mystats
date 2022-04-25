@@ -67,7 +67,7 @@ class LinkGame(commands.Cog):
         game_list = [i for i in SUPPORTED_GAMES if i in channel_name]
         game_name = None
         if game_list:
-            game_name: str = game_list[0].capitalize()
+            game_name: str = game_list[0].lower()
         else:
             return await ctx.send("Unsupported channel, make sure you are in a game category.")
 

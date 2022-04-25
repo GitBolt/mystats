@@ -108,11 +108,12 @@ class GameLobby:
         db = self.bot.mongo_client["LinkGame"]
         users = [db[str(player.id)][self.platform] for player in self.players]
         desc = ""
-        for user in users:
-            data = await user.find_one({"game": self.game.lower()})
-            desc += f"{self.players[users.index(user)]}: " + f"{data['id']}\n" if data else "None\n"
-
-
+        for player in self.players:
+            data = await users[self.players.index(player)].find_one({"game": self.game.lower()})
+            if data:
+                desc += f"{player}: {data['id']}\n"
+            else:
+                desc += f"{player}: *Game not linked*\n"
         embed: Embed = Embed(title="Player IDs", description=desc, color=Colours.INFO.value
                              )
         message = await self.text_channel.send(embed=embed)
@@ -123,7 +124,7 @@ class GameLobby:
         users = [db[str(player.id)][self.platform] for player in self.players]
         desc = ""
         for player in self.players:
-            data = await users[players.index(player)].find_one({"game": self.game.lower()})
+            data = await users[self.players.index(player)].find_one({"game": self.game.lower()})
             if data:
                 desc += f"{player}: {data['id']}\n"
             else:
@@ -176,7 +177,7 @@ class GameLobby:
         mentions = " ".join([player.mention for player in self.players])
         await self.channel.send(
             "The lobby is filled! Head over to "
-            f"`{self.voice_channel.name}` text and voice channels. {mentions}"
+            f"`{self.text_channel.name}` text and voice channels. {mentions}"
         )
         self.started = True
 
@@ -310,27 +311,24 @@ class Lobby(commands.Cog):
         ).add_field(
             name="Type",
             value=info,
-            inline=False
         ).add_field(
             name="Slots",
             value=f"{len(lobby.players)}/{players_required}",
-            inline=False
         ).add_field(
             name="Players in lobby",
             value=ctx.author,
-            inline=False
         ).add_field(
             name="Region",
             value=region,
-            inline=False
         ).add_field(
             name="Platform",
             value=platform.upper(),
-            inline=False
+        ).add_field(
+            name="Mic required",
+            value="No" if no_mic else "Yes",
         ).add_field(
             name="Closing in",
             value="30 minutes",
-            inline=False
         ).set_footer(
             text="Waiting for players to join..."
         ).set_author(
@@ -370,7 +368,8 @@ class Lobby(commands.Cog):
                 await lobby.close()
                 self.lobbies.remove(lobby)
                 await lobby.text_channel.delete()
-                await lobby.voice_channel.delete()
+                if lobby.no_mic:
+                    await lobby.voice_channel.delete()
                 await ctx.send("The lobby has been closed.")
         else:
             await ctx.send("You have not started any lobby.")
