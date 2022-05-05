@@ -222,6 +222,7 @@ class Lobby(commands.Cog):
         region: str = None,
         platform: str = None,
         no_mic: str = None,
+        player_amount: str = None,
         *,
         description: str = "Looking for players",
     ) -> None:
@@ -239,6 +240,10 @@ class Lobby(commands.Cog):
 
         else:
             return await ctx.send("Unsupported game channel")
+        print(player_amount)
+        if game.lower() == "warzone" or game.lower() == "halo":
+            if mode.lower() in ["rebirth", "plunder", "crossplay"] and not player_amount or not player_amount.isdigit():
+                return await ctx.send("You need to specify player amount after mic argument for this game mode")
 
         help_message = "Invalid or missing parameters, use the following format:```!lobby create <region> <platform> <mic-req> <description>```"
         if not region or not platform or not no_mic:
@@ -292,7 +297,7 @@ class Lobby(commands.Cog):
         lobby: GameLobby = GameLobby(
             self.bot,
             ctx.author,
-            players_required,
+            int(player_amount) or players_required,
             description,
             platform,
             region,
@@ -313,7 +318,7 @@ class Lobby(commands.Cog):
             value=info,
         ).add_field(
             name="Slots",
-            value=f"{len(lobby.players)}/{players_required}",
+            value=f"{len(lobby.players)}/{player_amount or players_required}",
         ).add_field(
             name="Players in lobby",
             value=ctx.author,
