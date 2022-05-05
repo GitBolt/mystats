@@ -18,7 +18,7 @@ class LinkGame(commands.Cog):
 
     @commands.group(pass_context=True, invoke_without_command=True)
     async def link(self, ctx: commands.Context) -> None:
-        await ctx.invoke(self.bot.get_command('help'))
+        pass
 
     @link.command()
     async def game(

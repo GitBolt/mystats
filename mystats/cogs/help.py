@@ -10,6 +10,7 @@ class Help(commands.Cog):
 
     @commands.command()
     async def help(self, ctx: commands.Context) -> None:
+        if ctx.channel.id != 968140355469967360: return
         embed: Embed = Embed(
             title="Welcome to MYSTATS LOBBY CREATOR",
             color=Colours.DEFAULT.value

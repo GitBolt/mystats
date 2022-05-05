@@ -209,7 +209,7 @@ class Lobby(commands.Cog):
 
     @commands.group(pass_context=True, invoke_without_command=True)
     async def lobby(self, ctx: commands.Context) -> None:
-        await ctx.invoke(self.bot.get_command('help'))
+        await ctx.send("Invalid or missing parameters, use the following format:```!lobby create <region> <platform> <mic-req> <description>```")
 
     @commands.command()
     async def close(self, ctx: commands.Context) -> None:
