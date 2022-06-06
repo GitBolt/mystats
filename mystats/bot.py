@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from disnake.ext import commands
 from disnake import Intents, Activity, ActivityType
 
+
 load_dotenv()
 
 intents: Intents = Intents().all()
